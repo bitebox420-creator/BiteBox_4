@@ -246,9 +246,35 @@ def search_menu():
 def create_order():
     data = request.json
     
+    if not data or not data.get('items') or len(data['items']) == 0:
+        return jsonify({'error': 'Cart is empty'}), 400
+    
+    total = 0
+    health_points_earned = 0
+    order_items_to_add = []
+    
+    for item_data in data['items']:
+        menu_item = MenuItem.query.get(item_data['menu_item_id'])
+        if not menu_item:
+            return jsonify({'error': f'Menu item {item_data["menu_item_id"]} not found'}), 400
+        if not menu_item.is_available:
+            return jsonify({'error': f'{menu_item.name} is not available'}), 400
+        if menu_item.stock < item_data['quantity']:
+            return jsonify({'error': f'Insufficient stock for {menu_item.name}. Only {menu_item.stock} available'}), 400
+        
+        order_items_to_add.append({
+            'menu_item': menu_item,
+            'quantity': item_data['quantity'],
+            'price': menu_item.price
+        })
+        total += menu_item.price * item_data['quantity']
+        
+        if menu_item.health_score >= 7:
+            health_points_earned += menu_item.health_score * item_data['quantity']
+    
     order = Order(
         student_id=current_user.id,
-        total_amount=0,
+        total_amount=total,
         order_type=data.get('order_type', 'regular'),
         pickup_time=datetime.strptime(data['pickup_time'], '%Y-%m-%dT%H:%M') if data.get('pickup_time') else None,
         delivery_location=data.get('delivery_location'),
@@ -257,31 +283,28 @@ def create_order():
     db.session.add(order)
     db.session.flush()
     
-    total = 0
-    health_points_earned = 0
-    
-    for item_data in data['items']:
-        menu_item = MenuItem.query.get(item_data['menu_item_id'])
-        if menu_item and menu_item.stock >= item_data['quantity']:
-            order_item = OrderItem(
-                order_id=order.id,
-                menu_item_id=menu_item.id,
-                quantity=item_data['quantity'],
-                price=menu_item.price
-            )
-            db.session.add(order_item)
-            total += menu_item.price * item_data['quantity']
-            menu_item.stock -= item_data['quantity']
-            
-            if menu_item.health_score >= 7:
-                health_points_earned += menu_item.health_score * item_data['quantity']
-    
-    order.total_amount = total
+    for item_info in order_items_to_add:
+        order_item = OrderItem(
+            order_id=order.id,
+            menu_item_id=item_info['menu_item'].id,
+            quantity=item_info['quantity'],
+            price=item_info['price']
+        )
+        db.session.add(order_item)
+        item_info['menu_item'].stock -= item_info['quantity']
     
     gamification = Gamification.query.filter_by(user_id=current_user.id).first()
-    if gamification:
-        gamification.health_points += health_points_earned
-        gamification.total_healthy_meals += 1
+    if not gamification:
+        gamification = Gamification(user_id=current_user.id, health_points=0, total_healthy_meals=0, streak_days=0, rank=0)
+        db.session.add(gamification)
+        db.session.flush()
+    
+    current_points = gamification.health_points or 0
+    current_meals = gamification.total_healthy_meals or 0
+    
+    gamification.health_points = current_points + health_points_earned
+    if health_points_earned > 0:
+        gamification.total_healthy_meals = current_meals + 1
     
     db.session.commit()
     
@@ -295,10 +318,16 @@ def create_order():
 @app.route('/api/orders')
 @login_required
 def get_orders():
+    from sqlalchemy.orm import joinedload
+    
     if current_user.role == 'admin' or current_user.role == 'vendor':
-        orders = Order.query.order_by(Order.created_at.desc()).all()
+        orders = Order.query.options(
+            joinedload(Order.items).joinedload(OrderItem.menu_item)
+        ).order_by(Order.created_at.desc()).all()
     else:
-        orders = Order.query.filter_by(student_id=current_user.id).order_by(Order.created_at.desc()).all()
+        orders = Order.query.filter_by(student_id=current_user.id).options(
+            joinedload(Order.items).joinedload(OrderItem.menu_item)
+        ).order_by(Order.created_at.desc()).all()
     
     return jsonify([{
         'id': order.id,
@@ -307,7 +336,7 @@ def get_orders():
         'order_type': order.order_type,
         'created_at': order.created_at.isoformat(),
         'items': [{
-            'name': item.menu_item.name,
+            'name': item.menu_item.name if item.menu_item else 'Unknown',
             'quantity': item.quantity,
             'price': item.price
         } for item in order.items]

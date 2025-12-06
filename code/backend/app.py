@@ -943,6 +943,126 @@ def mark_notification_read(notification_id):
     db.session.commit()
     return jsonify({'message': 'Notification marked as read'})
 
+# ==================== ADMIN USERS API ====================
+
+@app.route('/api/admin/users')
+@login_required
+def get_user_stats():
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    students = User.query.filter_by(role='student').count()
+    parents = User.query.filter_by(role='parent').count()
+    vendors = User.query.filter_by(role='vendor').count()
+    admins = User.query.filter_by(role='admin').count()
+    
+    return jsonify({
+        'students': students,
+        'parents': parents,
+        'vendors': vendors,
+        'admins': admins,
+        'total': students + parents + vendors + admins
+    })
+
+# ==================== ADMIN REPORTS API ====================
+
+@app.route('/api/admin/reports/<report_type>')
+@login_required
+def generate_admin_report(report_type):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    today = datetime.utcnow().date()
+    
+    if report_type == 'daily':
+        start_date = today
+        title = f"Daily Sales Report - {today.strftime('%B %d, %Y')}"
+        orders = Order.query.filter(db.func.date(Order.created_at) == today).all()
+    elif report_type == 'weekly':
+        start_date = today - timedelta(days=7)
+        title = f"Weekly Sales Report - {start_date.strftime('%b %d')} to {today.strftime('%b %d, %Y')}"
+        orders = Order.query.filter(Order.created_at >= start_date).all()
+    else:
+        start_date = today - timedelta(days=30)
+        title = f"Monthly Sales Report - {start_date.strftime('%B %Y')}"
+        orders = Order.query.filter(Order.created_at >= start_date).all()
+    
+    total_revenue = sum(o.total_amount for o in orders)
+    total_orders = len(orders)
+    
+    item_sales = {}
+    category_sales = {}
+    for order in orders:
+        for item in order.items:
+            item_name = item.menu_item.name if item.menu_item else 'Unknown'
+            category = item.menu_item.category if item.menu_item else 'Unknown'
+            item_sales[item_name] = item_sales.get(item_name, 0) + item.quantity
+            category_sales[category] = category_sales.get(category, 0) + (item.price * item.quantity)
+    
+    top_items = sorted(item_sales.items(), key=lambda x: x[1], reverse=True)[:10]
+    
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    
+    p.setFont("Helvetica-Bold", 24)
+    p.drawString(50, height - 50, "BiteBox Smart Canteen")
+    p.setFont("Helvetica", 12)
+    p.drawString(50, height - 70, "Silverline Prestige School, Ghaziabad")
+    
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(50, height - 110, title)
+    p.setFont("Helvetica", 12)
+    p.drawString(50, height - 130, f"Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}")
+    
+    p.line(50, height - 150, width - 50, height - 150)
+    
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(50, height - 180, "Summary")
+    p.setFont("Helvetica", 12)
+    p.drawString(50, height - 200, f"Total Orders: {total_orders}")
+    p.drawString(50, height - 220, f"Total Revenue: Rs.{total_revenue}")
+    p.drawString(50, height - 240, f"Average Order Value: Rs.{total_revenue / total_orders if total_orders > 0 else 0:.2f}")
+    
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(50, height - 280, "Top Selling Items")
+    
+    y = height - 305
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(50, y, "Rank")
+    p.drawString(100, y, "Item Name")
+    p.drawString(350, y, "Quantity Sold")
+    
+    y -= 20
+    p.setFont("Helvetica", 11)
+    for idx, (name, qty) in enumerate(top_items, 1):
+        p.drawString(50, y, f"#{idx}")
+        p.drawString(100, y, name[:40])
+        p.drawString(350, y, str(qty))
+        y -= 18
+        if y < 150:
+            break
+    
+    y -= 30
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(50, y, "Sales by Category")
+    y -= 25
+    p.setFont("Helvetica", 11)
+    for cat, amount in sorted(category_sales.items(), key=lambda x: x[1], reverse=True):
+        p.drawString(50, y, f"{cat}: Rs.{amount}")
+        y -= 18
+        if y < 80:
+            break
+    
+    p.setFont("Helvetica", 10)
+    p.drawString(50, 50, "BiteBox Smart Canteen - Automated Report")
+    
+    p.showPage()
+    p.save()
+    
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name=f'{report_type}_report_{today.strftime("%Y_%m_%d")}.pdf', mimetype='application/pdf')
+
 # ==================== FEEDBACK API ====================
 
 @app.route('/api/feedback', methods=['GET', 'POST'])

@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadOrders();
     loadInventory();
     loadFeedback();
+    loadUserStats();
     setupNavigation();
 });
 
@@ -264,6 +265,24 @@ async function loadFeedback() {
 
 function generateReport(type) {
     showToast(`Generating ${type} report...`, 'info');
+    window.location.href = `/api/admin/reports/${type}`;
+}
+
+async function loadUserStats() {
+    try {
+        const response = await fetch('/api/admin/users');
+        const data = await response.json();
+        
+        const studentsEl = document.getElementById('totalStudents');
+        const parentsEl = document.getElementById('totalParents');
+        const vendorsEl = document.getElementById('totalVendors');
+        
+        if (studentsEl) studentsEl.textContent = data.students || 0;
+        if (parentsEl) parentsEl.textContent = data.parents || 0;
+        if (vendorsEl) vendorsEl.textContent = data.vendors || 0;
+    } catch (error) {
+        console.error('Failed to load user stats:', error);
+    }
 }
 
 function openAddItemModal() {

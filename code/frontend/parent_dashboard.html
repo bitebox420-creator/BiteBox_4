@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard - BiteBox</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar parent-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon"><i class="fas fa-box-open"></i></div>
+                <h2>BiteBox</h2>
+                <span class="role-badge">Parent</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview">
+                    <i class="fas fa-home"></i> Overview
+                </a>
+                <a href="#" class="nav-item" data-section="children">
+                    <i class="fas fa-child"></i> My Children
+                </a>
+                <a href="#" class="nav-item" data-section="nutrition">
+                    <i class="fas fa-chart-pie"></i> Nutrition Report
+                </a>
+                <a href="#" class="nav-item" data-section="spending">
+                    <i class="fas fa-wallet"></i> Spending Summary
+                </a>
+                <a href="#" class="nav-item" data-section="controls">
+                    <i class="fas fa-shield-alt"></i> Parental Controls
+                </a>
+                <a href="#" class="nav-item" data-section="invoices">
+                    <i class="fas fa-file-invoice"></i> Invoices
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button onclick="logout()" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Parent Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <button class="notification-btn" onclick="showNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <section id="overview" class="content-section active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                            <div class="stat-info">
+                                <h3 id="childrenCount">0</h3>
+                                <p>Children</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                            <div class="stat-info">
+                                <h3 id="monthlySpent">₹0</h3>
+                                <p>This Month</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-utensils"></i></div>
+                            <div class="stat-info">
+                                <h3 id="totalMeals">0</h3>
+                                <p>Meals Ordered</p>
+                            </div>
+                        </div>
+                        <div class="stat-card healthy">
+                            <div class="stat-icon"><i class="fas fa-heart"></i></div>
+                            <div class="stat-info">
+                                <h3 id="healthyPercent">0%</h3>
+                                <p>Healthy Choices</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="card children-summary">
+                            <h3><i class="fas fa-child"></i> Children Summary</h3>
+                            <div id="childrenSummary" class="children-list"></div>
+                        </div>
+                        <div class="card recent-activity">
+                            <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                            <div id="recentActivity" class="activity-list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="children" class="content-section">
+                    <h2><i class="fas fa-child"></i> My Children</h2>
+                    <div id="childrenDetails" class="children-grid"></div>
+                </section>
+
+                <section id="nutrition" class="content-section">
+                    <h2><i class="fas fa-chart-pie"></i> Nutrition Report</h2>
+                    <div class="child-selector">
+                        <label>Select Child:</label>
+                        <select id="nutritionChild" onchange="loadNutritionReport()">
+                            <option value="">Select a child</option>
+                        </select>
+                    </div>
+                    <div id="nutritionReport" class="nutrition-grid">
+                        <div class="card calories-card">
+                            <h3>Weekly Calories</h3>
+                            <div class="big-number" id="weeklyCalories">0</div>
+                            <p>kcal consumed</p>
+                        </div>
+                        <div class="card protein-card">
+                            <h3>Weekly Protein</h3>
+                            <div class="big-number" id="weeklyProtein">0g</div>
+                            <p>protein intake</p>
+                        </div>
+                        <div class="card category-card">
+                            <h3>Food Categories</h3>
+                            <div id="categoryBreakdown" class="category-list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="spending" class="content-section">
+                    <h2><i class="fas fa-wallet"></i> Spending Summary</h2>
+                    <div class="spending-grid">
+                        <div class="card">
+                            <h3>Weekly Spending</h3>
+                            <div class="big-number" id="weeklySpending">₹0</div>
+                        </div>
+                        <div class="card">
+                            <h3>Monthly Spending</h3>
+                            <div class="big-number" id="monthlySpending">₹0</div>
+                        </div>
+                        <div class="card spending-chart">
+                            <h3>Spending Trend</h3>
+                            <div id="spendingChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="controls" class="content-section">
+                    <h2><i class="fas fa-shield-alt"></i> Parental Controls</h2>
+                    <div class="child-selector">
+                        <label>Select Child:</label>
+                        <select id="controlChild" onchange="loadParentalControls()">
+                            <option value="">Select a child</option>
+                        </select>
+                    </div>
+                    <div class="controls-grid">
+                        <div class="card">
+                            <h3>Spending Limits</h3>
+                            <div class="form-group">
+                                <label>Daily Limit (₹)</label>
+                                <input type="number" id="dailyLimit" placeholder="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Weekly Limit (₹)</label>
+                                <input type="number" id="weeklyLimit" placeholder="500">
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Food Restrictions</h3>
+                            <div class="restriction-options">
+                                <label><input type="checkbox" id="blockJunkFood"> Block Junk Food</label>
+                                <label><input type="checkbox" id="blockSugaryDrinks"> Block Sugary Drinks</label>
+                                <label><input type="checkbox" id="requireApproval"> Require Approval for Orders</label>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Allowed Categories</h3>
+                            <div class="category-options">
+                                <label><input type="checkbox" checked value="Fruits"> Fruits</label>
+                                <label><input type="checkbox" checked value="Salads"> Salads</label>
+                                <label><input type="checkbox" checked value="Meals"> Meals</label>
+                                <label><input type="checkbox" checked value="Beverages"> Beverages</label>
+                                <label><input type="checkbox" value="Snacks"> Snacks</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="saveParentalControls()" class="btn-primary">Save Controls</button>
+                </section>
+
+                <section id="invoices" class="content-section">
+                    <h2><i class="fas fa-file-invoice"></i> Invoices</h2>
+                    <div class="invoice-actions">
+                        <button onclick="downloadMonthlySummary()" class="btn-secondary">
+                            <i class="fas fa-download"></i> Download Monthly Summary
+                        </button>
+                    </div>
+                    <div id="invoicesList" class="invoices-list"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/parent-dashboard.js"></script>
+</body>
+</html>

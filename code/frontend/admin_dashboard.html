@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - BiteBox</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar admin-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon"><i class="fas fa-box-open"></i></div>
+                <h2>BiteBox</h2>
+                <span class="role-badge admin">Admin</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </a>
+                <a href="#" class="nav-item" data-section="orders">
+                    <i class="fas fa-shopping-bag"></i> Orders
+                </a>
+                <a href="#" class="nav-item" data-section="inventory">
+                    <i class="fas fa-boxes"></i> Inventory
+                </a>
+                <a href="#" class="nav-item" data-section="menu">
+                    <i class="fas fa-utensils"></i> Menu Management
+                </a>
+                <a href="#" class="nav-item" data-section="users">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                <a href="#" class="nav-item" data-section="feedback">
+                    <i class="fas fa-comments"></i> Feedback
+                </a>
+                <a href="#" class="nav-item" data-section="reports">
+                    <i class="fas fa-file-alt"></i> Reports
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button onclick="logout()" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Admin Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="date-filter">
+                        <select id="dateRange">
+                            <option value="today">Today</option>
+                            <option value="week" selected>This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">5</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <section id="overview" class="content-section active">
+                    <div class="stats-grid">
+                        <div class="stat-card revenue">
+                            <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                            <div class="stat-info">
+                                <h3 id="dailyRevenue">₹0</h3>
+                                <p>Today's Revenue</p>
+                            </div>
+                            <div class="stat-trend up">
+                                <i class="fas fa-arrow-up"></i> 12%
+                            </div>
+                        </div>
+                        <div class="stat-card orders">
+                            <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                            <div class="stat-info">
+                                <h3 id="dailyOrders">0</h3>
+                                <p>Today's Orders</p>
+                            </div>
+                        </div>
+                        <div class="stat-card weekly">
+                            <div class="stat-icon"><i class="fas fa-calendar-week"></i></div>
+                            <div class="stat-info">
+                                <h3 id="weeklyRevenue">₹0</h3>
+                                <p>Weekly Revenue</p>
+                            </div>
+                        </div>
+                        <div class="stat-card monthly">
+                            <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                            <div class="stat-info">
+                                <h3 id="monthlyRevenue">₹0</h3>
+                                <p>Monthly Revenue</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="card chart-card">
+                            <h3><i class="fas fa-chart-area"></i> Sales Trend</h3>
+                            <div id="salesChart" class="chart-container">
+                                <div class="chart-bars" id="salesBars"></div>
+                            </div>
+                        </div>
+                        <div class="card top-items">
+                            <h3><i class="fas fa-fire"></i> Top Selling Items</h3>
+                            <div id="topItemsList" class="items-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="card low-stock-alert">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Low Stock Alerts</h3>
+                        <div id="lowStockList" class="stock-list"></div>
+                    </div>
+                </section>
+
+                <section id="orders" class="content-section">
+                    <h2><i class="fas fa-shopping-bag"></i> Order Management</h2>
+                    <div class="order-filters">
+                        <button class="filter-btn active" data-status="all">All</button>
+                        <button class="filter-btn" data-status="pending">Pending</button>
+                        <button class="filter-btn" data-status="preparing">Preparing</button>
+                        <button class="filter-btn" data-status="ready">Ready</button>
+                        <button class="filter-btn" data-status="completed">Completed</button>
+                    </div>
+                    <div id="adminOrdersList" class="admin-orders-list"></div>
+                </section>
+
+                <section id="inventory" class="content-section">
+                    <h2><i class="fas fa-boxes"></i> Inventory Management</h2>
+                    <div class="inventory-actions">
+                        <button onclick="autoRestockNotify()" class="btn-secondary">
+                            <i class="fas fa-bell"></i> Notify Vendor for Restock
+                        </button>
+                    </div>
+                    <div id="inventoryList" class="inventory-grid"></div>
+                </section>
+
+                <section id="menu" class="content-section">
+                    <h2><i class="fas fa-utensils"></i> Menu Management</h2>
+                    <button onclick="openAddItemModal()" class="btn-primary">
+                        <i class="fas fa-plus"></i> Add New Item
+                    </button>
+                    <div id="menuManagementList" class="menu-management-grid"></div>
+                </section>
+
+                <section id="users" class="content-section">
+                    <h2><i class="fas fa-users"></i> User Management</h2>
+                    <div class="user-stats">
+                        <div class="stat-mini">
+                            <span id="totalStudents">0</span>
+                            <small>Students</small>
+                        </div>
+                        <div class="stat-mini">
+                            <span id="totalParents">0</span>
+                            <small>Parents</small>
+                        </div>
+                        <div class="stat-mini">
+                            <span id="totalVendors">0</span>
+                            <small>Vendors</small>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="feedback" class="content-section">
+                    <h2><i class="fas fa-comments"></i> User Feedback</h2>
+                    <div class="feedback-summary">
+                        <div class="rating-overview">
+                            <div class="big-rating" id="avgRating">4.5</div>
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="feedbackList" class="feedback-list"></div>
+                </section>
+
+                <section id="reports" class="content-section">
+                    <h2><i class="fas fa-file-alt"></i> Generate Reports</h2>
+                    <div class="report-options">
+                        <button onclick="generateReport('daily')" class="btn-secondary">
+                            <i class="fas fa-file-pdf"></i> Daily Report
+                        </button>
+                        <button onclick="generateReport('weekly')" class="btn-secondary">
+                            <i class="fas fa-file-pdf"></i> Weekly Report
+                        </button>
+                        <button onclick="generateReport('monthly')" class="btn-secondary">
+                            <i class="fas fa-file-pdf"></i> Monthly Report
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/admin-dashboard.js"></script>
+</body>
+</html>

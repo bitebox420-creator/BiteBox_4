@@ -16,13 +16,15 @@ class User(UserMixin, db.Model):
     class_name = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Parent-Child relationship
+    # Parent-Child relationship (self-referential)
     parent_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    children = db.relationship('User', remote_side=[parent_id], backref='parent')
     
     # Health profile
     health_profile = db.relationship('HealthProfile', backref='user', uselist=False)
     orders = db.relationship('Order', backref='student', lazy=True)
+    
+    def get_children(self):
+        return User.query.filter_by(parent_id=self.id).all()
 
 class HealthProfile(db.Model):
     __tablename__ = 'health_profiles'

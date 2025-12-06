@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - BiteBox Smart Canteen</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <a href="/" class="logo-section">
+                <div class="logo-icon"><i class="fas fa-box-open"></i></div>
+                <div class="logo-text">
+                    <h1>BiteBox</h1>
+                    <span>Smart Canteen</span>
+                </div>
+            </a>
+            <div class="header-actions">
+                <button class="btn-icon" onclick="toggleDarkMode()">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <a href="/login" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Login</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="menu-page">
+        <section class="menu-hero">
+            <h1>Our Menu</h1>
+            <p>Fresh, healthy, and delicious options for every taste</p>
+        </section>
+
+        <section class="menu-content">
+            <div class="menu-sidebar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="menuSearch" placeholder="Search menu...">
+                </div>
+
+                <div class="ai-search-box">
+                    <h4><i class="fas fa-robot"></i> AI Search</h4>
+                    <input type="text" id="aiSearch" placeholder="e.g., 'high protein under ₹50'">
+                    <button onclick="aiSearchMenu()" class="btn-ai">Search with AI</button>
+                </div>
+
+                <div class="filter-section">
+                    <h4>Categories</h4>
+                    <div id="categoryFilters" class="category-filters">
+                        <button class="category-btn active" data-category="all">
+                            <i class="fas fa-th-large"></i> All Items
+                        </button>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h4>Dietary</h4>
+                    <div class="dietary-filters">
+                        <label><input type="checkbox" id="filterVeg"> <i class="fas fa-leaf"></i> Vegetarian</label>
+                        <label><input type="checkbox" id="filterVegan"> <i class="fas fa-seedling"></i> Vegan</label>
+                        <label><input type="checkbox" id="filterGlutenFree"> <i class="fas fa-bread-slice"></i> Gluten-Free</label>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h4>Price Range</h4>
+                    <div class="price-filter">
+                        <input type="range" id="priceRange" min="0" max="100" value="100">
+                        <span>Up to ₹<span id="priceValue">100</span></span>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h4>Health Score</h4>
+                    <div class="health-filter">
+                        <button class="health-btn" data-score="7">7+ <i class="fas fa-heart"></i></button>
+                        <button class="health-btn" data-score="8">8+ <i class="fas fa-heart"></i></button>
+                        <button class="health-btn" data-score="9">9+ <i class="fas fa-heart"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-main">
+                <div class="menu-header">
+                    <div class="results-info">
+                        <span id="resultsCount">0</span> items found
+                    </div>
+                    <div class="sort-options">
+                        <select id="sortBy">
+                            <option value="name">Sort by Name</option>
+                            <option value="price_low">Price: Low to High</option>
+                            <option value="price_high">Price: High to Low</option>
+                            <option value="health">Health Score</option>
+                            <option value="calories">Calories</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="menuGrid" class="menu-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <div id="itemModal" class="modal">
+        <div class="modal-content item-modal">
+            <button onclick="closeItemModal()" class="close-btn">&times;</button>
+            <div class="item-modal-content">
+                <div class="item-image">
+                    <img id="modalItemImage" src="" alt="">
+                </div>
+                <div class="item-details">
+                    <h2 id="modalItemName"></h2>
+                    <p id="modalItemDescription"></p>
+                    <div class="nutrition-info">
+                        <div class="nutrition-item">
+                            <span class="label">Calories</span>
+                            <span id="modalCalories" class="value"></span>
+                        </div>
+                        <div class="nutrition-item">
+                            <span class="label">Protein</span>
+                            <span id="modalProtein" class="value"></span>
+                        </div>
+                        <div class="nutrition-item">
+                            <span class="label">Carbs</span>
+                            <span id="modalCarbs" class="value"></span>
+                        </div>
+                        <div class="nutrition-item">
+                            <span class="label">Fats</span>
+                            <span id="modalFats" class="value"></span>
+                        </div>
+                    </div>
+                    <div class="health-score-display">
+                        <span>Health Score:</span>
+                        <div class="score-bar">
+                            <div id="modalHealthBar" class="score-fill"></div>
+                        </div>
+                        <span id="modalHealthScore"></span>/10
+                    </div>
+                    <div class="item-tags" id="modalTags"></div>
+                    <div class="item-price">
+                        <span id="modalPrice"></span>
+                    </div>
+                    <div class="quantity-selector">
+                        <button onclick="decreaseQty()">-</button>
+                        <input type="number" id="itemQty" value="1" min="1">
+                        <button onclick="increaseQty()">+</button>
+                    </div>
+                    <button onclick="addToCartFromModal()" class="btn-primary btn-full">
+                        <i class="fas fa-cart-plus"></i> Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button id="cartFab" class="fab cart-fab" onclick="openCart()">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-count" id="cartCount">0</span>
+    </button>
+
+    <div id="cartSidebar" class="cart-sidebar">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
+            <button onclick="closeCart()" class="close-btn">&times;</button>
+        </div>
+        <div id="cartItems" class="cart-items"></div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cartTotal">₹0</span>
+            </div>
+            <a href="/login" class="btn-primary btn-full">Login to Order</a>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/menu.js"></script>
+</body>
+</html>

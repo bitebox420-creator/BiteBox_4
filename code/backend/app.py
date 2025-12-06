@@ -433,7 +433,14 @@ def manage_parental_controls(child_id):
             db.session.add(control)
         
         control.approved_items = json.dumps(data.get('approved_items', []))
-        control.blocked_items = json.dumps(data.get('blocked_items', []))
+        
+        blocked_items = data.get('blocked_items', [])
+        if data.get('block_junk_food') and 'junk_food' not in blocked_items:
+            blocked_items.append('junk_food')
+        if data.get('block_sugary_drinks') and 'sugary_drinks' not in blocked_items:
+            blocked_items.append('sugary_drinks')
+        control.blocked_items = json.dumps(blocked_items)
+        
         control.daily_limit = data.get('daily_limit')
         control.spending_limit = data.get('spending_limit')
         control.require_approval = data.get('require_approval', False)
@@ -444,13 +451,16 @@ def manage_parental_controls(child_id):
     
     control = ParentalControl.query.filter_by(parent_id=current_user.id, child_id=child_id).first()
     if control:
+        blocked_items = json.loads(control.blocked_items or '[]')
         return jsonify({
             'approved_items': json.loads(control.approved_items or '[]'),
-            'blocked_items': json.loads(control.blocked_items or '[]'),
+            'blocked_items': blocked_items,
             'daily_limit': control.daily_limit,
             'spending_limit': control.spending_limit,
             'require_approval': control.require_approval,
-            'allowed_categories': json.loads(control.allowed_categories or '[]')
+            'allowed_categories': json.loads(control.allowed_categories or '[]'),
+            'block_junk_food': 'junk_food' in blocked_items,
+            'block_sugary_drinks': 'sugary_drinks' in blocked_items
         })
     return jsonify({})
 
@@ -775,6 +785,137 @@ def get_monthly_summary():
         'total_spent': total_spent,
         'total_orders': total_orders,
         'average_per_order': total_spent / total_orders if total_orders > 0 else 0
+    })
+
+@app.route('/api/invoices/monthly/pdf')
+@login_required
+def get_monthly_pdf():
+    month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    if current_user.role == 'parent':
+        children = User.query.filter_by(parent_id=current_user.id).all()
+        child_ids = [c.id for c in children]
+        orders = Order.query.filter(Order.student_id.in_(child_ids), Order.created_at >= month_start).all()
+    else:
+        orders = Order.query.filter(Order.student_id == current_user.id, Order.created_at >= month_start).all()
+    
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    
+    p.setFont("Helvetica-Bold", 24)
+    p.drawString(50, height - 50, "BiteBox Smart Canteen")
+    p.setFont("Helvetica", 12)
+    p.drawString(50, height - 70, "Monthly Summary Report")
+    
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(50, height - 110, f"Month: {month_start.strftime('%B %Y')}")
+    p.setFont("Helvetica", 12)
+    p.drawString(50, height - 130, f"Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}")
+    
+    p.line(50, height - 150, width - 50, height - 150)
+    
+    total_spent = sum(o.total_amount for o in orders)
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(50, height - 180, f"Total Orders: {len(orders)}")
+    p.drawString(50, height - 200, f"Total Spent: ₹{total_spent}")
+    p.drawString(50, height - 220, f"Average per Order: ₹{total_spent / len(orders) if orders else 0:.2f}")
+    
+    y = height - 260
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(50, y, "Order #")
+    p.drawString(120, y, "Date")
+    p.drawString(250, y, "Items")
+    p.drawString(400, y, "Amount")
+    
+    y -= 25
+    p.setFont("Helvetica", 10)
+    for order in orders[:20]:
+        p.drawString(50, y, str(order.id))
+        p.drawString(120, y, order.created_at.strftime('%Y-%m-%d'))
+        p.drawString(250, y, str(len(order.items)))
+        p.drawString(400, y, f"₹{order.total_amount}")
+        y -= 18
+        if y < 100:
+            p.showPage()
+            y = height - 50
+    
+    p.setFont("Helvetica", 10)
+    p.drawString(50, 50, "Thank you for choosing BiteBox Smart Canteen!")
+    
+    p.showPage()
+    p.save()
+    
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name=f'monthly_summary_{month_start.strftime("%Y_%m")}.pdf', mimetype='application/pdf')
+
+@app.route('/api/parent/activity')
+@login_required
+def get_parent_activity():
+    if current_user.role != 'parent':
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    children = User.query.filter_by(parent_id=current_user.id).all()
+    child_ids = [c.id for c in children]
+    child_names = {c.id: c.name for c in children}
+    
+    from sqlalchemy.orm import joinedload
+    recent_orders = Order.query.filter(Order.student_id.in_(child_ids)).options(
+        joinedload(Order.items).joinedload(OrderItem.menu_item)
+    ).order_by(Order.created_at.desc()).limit(10).all()
+    
+    activities = []
+    for order in recent_orders:
+        items_str = ', '.join([item.menu_item.name for item in order.items[:3]])
+        if len(order.items) > 3:
+            items_str += f' +{len(order.items) - 3} more'
+        
+        activities.append({
+            'type': 'order',
+            'child_name': child_names.get(order.student_id, 'Unknown'),
+            'description': f'Ordered: {items_str}',
+            'amount': order.total_amount,
+            'time': order.created_at.isoformat(),
+            'status': order.status
+        })
+    
+    return jsonify(activities)
+
+@app.route('/api/parent/stats')
+@login_required
+def get_parent_stats():
+    if current_user.role != 'parent':
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    children = User.query.filter_by(parent_id=current_user.id).all()
+    child_ids = [c.id for c in children]
+    
+    from sqlalchemy.orm import joinedload
+    month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    orders = Order.query.filter(
+        Order.student_id.in_(child_ids),
+        Order.created_at >= month_start
+    ).options(joinedload(Order.items).joinedload(OrderItem.menu_item)).all()
+    
+    total_items = 0
+    healthy_items = 0
+    total_spent = 0
+    
+    for order in orders:
+        total_spent += order.total_amount
+        for item in order.items:
+            total_items += item.quantity
+            if item.menu_item and item.menu_item.health_score >= 7:
+                healthy_items += item.quantity
+    
+    healthy_percent = round((healthy_items / total_items * 100) if total_items > 0 else 0)
+    
+    return jsonify({
+        'children_count': len(children),
+        'monthly_spent': total_spent,
+        'total_meals': len(orders),
+        'healthy_percent': healthy_percent
     })
 
 # ==================== NOTIFICATIONS API ====================

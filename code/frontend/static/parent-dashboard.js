@@ -3,7 +3,8 @@ let selectedChild = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadChildren();
-    loadMonthlySummary();
+    loadParentStats();
+    loadRecentActivity();
     setupNavigation();
 });
 
@@ -115,17 +116,75 @@ async function loadNutritionReport() {
     }
 }
 
-async function loadMonthlySummary() {
+async function loadParentStats() {
     try {
-        const response = await fetch('/api/invoices/monthly');
+        const response = await fetch('/api/parent/stats');
         const data = await response.json();
         
-        document.getElementById('monthlySpent').textContent = `₹${data.total_spent}`;
-        document.getElementById('monthlySpending').textContent = `₹${data.total_spent}`;
-        document.getElementById('totalMeals').textContent = data.total_orders;
+        document.getElementById('childrenCount').textContent = data.children_count || 0;
+        document.getElementById('monthlySpent').textContent = `₹${data.monthly_spent || 0}`;
+        document.getElementById('monthlySpending').textContent = `₹${data.monthly_spent || 0}`;
+        document.getElementById('totalMeals').textContent = data.total_meals || 0;
+        document.getElementById('healthyPercent').textContent = `${data.healthy_percent || 0}%`;
     } catch (error) {
-        console.error('Failed to load monthly summary:', error);
+        console.error('Failed to load parent stats:', error);
     }
+}
+
+async function loadRecentActivity() {
+    try {
+        const response = await fetch('/api/parent/activity');
+        const activities = await response.json();
+        
+        const container = document.getElementById('recentActivity');
+        if (!container) return;
+        
+        if (!activities || activities.length === 0) {
+            container.innerHTML = '<p class="no-data">No recent activity</p>';
+            return;
+        }
+        
+        container.innerHTML = activities.map(activity => {
+            const timeAgo = getTimeAgo(new Date(activity.time));
+            const statusClass = activity.status === 'completed' ? 'success' : 
+                               activity.status === 'pending' ? 'warning' : 'info';
+            
+            return `
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="activity-details">
+                        <p class="activity-title"><strong>${activity.child_name}</strong></p>
+                        <p class="activity-desc">${activity.description}</p>
+                        <span class="activity-meta">
+                            <span class="amount">₹${activity.amount}</span>
+                            <span class="status ${statusClass}">${activity.status}</span>
+                            <span class="time">${timeAgo}</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Failed to load recent activity:', error);
+        const container = document.getElementById('recentActivity');
+        if (container) {
+            container.innerHTML = '<p class="no-data">Failed to load activity</p>';
+        }
+    }
+}
+
+function getTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return 'Just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
 }
 
 async function loadParentalControls() {
@@ -136,13 +195,19 @@ async function loadParentalControls() {
         const response = await fetch(`/api/parent/child/${childId}/controls`);
         const controls = await response.json();
         
-        if (controls.daily_limit) {
-            document.getElementById('dailyLimit').value = controls.daily_limit;
-        }
-        if (controls.spending_limit) {
-            document.getElementById('weeklyLimit').value = controls.spending_limit;
-        }
+        document.getElementById('dailyLimit').value = controls.daily_limit || '';
+        document.getElementById('weeklyLimit').value = controls.spending_limit || '';
         document.getElementById('requireApproval').checked = controls.require_approval || false;
+        
+        const blockJunkFood = document.getElementById('blockJunkFood');
+        const blockSugaryDrinks = document.getElementById('blockSugaryDrinks');
+        if (blockJunkFood) blockJunkFood.checked = controls.block_junk_food || false;
+        if (blockSugaryDrinks) blockSugaryDrinks.checked = controls.block_sugary_drinks || false;
+        
+        const allowedCategories = controls.allowed_categories || [];
+        document.querySelectorAll('.category-options input').forEach(checkbox => {
+            checkbox.checked = allowedCategories.includes(checkbox.value);
+        });
     } catch (error) {
         console.error('Failed to load controls:', error);
     }
@@ -155,11 +220,21 @@ async function saveParentalControls() {
         return;
     }
     
+    const blockJunkFood = document.getElementById('blockJunkFood');
+    const blockSugaryDrinks = document.getElementById('blockSugaryDrinks');
+    
+    const blockedItems = [];
+    if (blockJunkFood && blockJunkFood.checked) blockedItems.push('junk_food');
+    if (blockSugaryDrinks && blockSugaryDrinks.checked) blockedItems.push('sugary_drinks');
+    
     const controls = {
         daily_limit: parseFloat(document.getElementById('dailyLimit').value) || null,
         spending_limit: parseFloat(document.getElementById('weeklyLimit').value) || null,
         require_approval: document.getElementById('requireApproval').checked,
-        allowed_categories: [...document.querySelectorAll('.category-options input:checked')].map(i => i.value)
+        allowed_categories: [...document.querySelectorAll('.category-options input:checked')].map(i => i.value),
+        blocked_items: blockedItems,
+        block_junk_food: blockJunkFood ? blockJunkFood.checked : false,
+        block_sugary_drinks: blockSugaryDrinks ? blockSugaryDrinks.checked : false
     };
     
     try {

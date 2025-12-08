@@ -17,6 +17,18 @@ function toggleDarkMode() {
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
+    
+    // Update button icon if it exists
+    const darkModeBtn = document.querySelector('.btn-icon i.fa-moon, .btn-icon i.fa-sun');
+    if (darkModeBtn) {
+        if (newTheme === 'dark') {
+            darkModeBtn.classList.replace('fa-moon', 'fa-sun');
+        } else {
+            darkModeBtn.classList.replace('fa-sun', 'fa-moon');
+        }
+    }
+    
+    showToast(newTheme === 'dark' ? '🌙 Dark mode enabled' : '☀️ Light mode enabled', 'success');
 }
 
 function toggleLanguage() {
@@ -175,4 +187,15 @@ function toggleSidebar() {
 
 function showNotifications() {
     showToast('Notifications panel coming soon!', 'info');
+}
+
+
+
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    
+    toast.textContent = message;
+    toast.className = `toast show ${type}`;
+    setTimeout(() => toast.classList.remove('show'), 3000);
 }

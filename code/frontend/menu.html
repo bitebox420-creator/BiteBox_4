@@ -40,12 +40,6 @@
                     <input type="text" id="menuSearch" placeholder="Search menu...">
                 </div>
 
-                <div class="ai-search-box">
-                    <h4><i class="fas fa-robot"></i> AI Search</h4>
-                    <input type="text" id="aiSearch" placeholder="e.g., 'high protein under ₹50'">
-                    <button onclick="aiSearchMenu()" class="btn-ai">Search with AI</button>
-                </div>
-
                 <div class="filter-section">
                     <h4>Categories</h4>
                     <div id="categoryFilters" class="category-filters">
@@ -59,25 +53,6 @@
                     <h4>Dietary</h4>
                     <div class="dietary-filters">
                         <label><input type="checkbox" id="filterVeg"> <i class="fas fa-leaf"></i> Vegetarian</label>
-                        <label><input type="checkbox" id="filterVegan"> <i class="fas fa-seedling"></i> Vegan</label>
-                        <label><input type="checkbox" id="filterGlutenFree"> <i class="fas fa-bread-slice"></i> Gluten-Free</label>
-                    </div>
-                </div>
-
-                <div class="filter-section">
-                    <h4>Price Range</h4>
-                    <div class="price-filter">
-                        <input type="range" id="priceRange" min="0" max="100" value="100">
-                        <span>Up to ₹<span id="priceValue">100</span></span>
-                    </div>
-                </div>
-
-                <div class="filter-section">
-                    <h4>Health Score</h4>
-                    <div class="health-filter">
-                        <button class="health-btn" data-score="7">7+ <i class="fas fa-heart"></i></button>
-                        <button class="health-btn" data-score="8">8+ <i class="fas fa-heart"></i></button>
-                        <button class="health-btn" data-score="9">9+ <i class="fas fa-heart"></i></button>
                     </div>
                 </div>
             </div>

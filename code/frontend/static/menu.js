@@ -213,11 +213,18 @@ function updateQuantity(itemId, change) {
 }
 
 function openCart() {
-    document.getElementById('cartSidebar').classList.add('open');
+    const cartSidebar = document.getElementById('cartSidebar');
+    if (cartSidebar) {
+        cartSidebar.classList.add('open');
+        cartSidebar.style.display = 'block';
+    }
 }
 
 function closeCart() {
-    document.getElementById('cartSidebar').classList.remove('open');
+    const cartSidebar = document.getElementById('cartSidebar');
+    if (cartSidebar) {
+        cartSidebar.classList.remove('open');
+    }
 }
 
 function aiSearchMenu() {

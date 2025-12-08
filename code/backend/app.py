@@ -10,6 +10,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 import json
 import random
+import requests
 
 from models import db, User, HealthProfile, MenuItem, Order, OrderItem, Invoice, SubscriptionPlan, Subscription, ParentalControl, Gamification, Notification, Feedback, Analytics
 
@@ -28,6 +29,41 @@ login_manager.login_view = 'login_page'
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+def send_order_email(order_data):
+    """Send order notification to bitebox105@gmail.com via Formspree"""
+    formspree_url = "https://formspree.io/f/movglgrr"
+    
+    email_content = f"""
+    New Order Received!
+    
+    Order ID: {order_data['order_id']}
+    Student Name: {order_data['student_name']}
+    Student ID: {order_data['student_id']}
+    Class: {order_data['class_name']}
+    Total Amount: ₹{order_data['total_amount']}
+    Order Date: {order_data['order_date']}
+    
+    Items Ordered:
+    {order_data['items_list']}
+    
+    Status: {order_data['status']}
+    """
+    
+    payload = {
+        "email": "bitebox105@gmail.com",
+        "message": email_content,
+        "order_id": order_data['order_id'],
+        "student_name": order_data['student_name'],
+        "total_amount": order_data['total_amount']
+    }
+    
+    try:
+        response = requests.post(formspree_url, json=payload)
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False
 
 def seed_menu_items():
     items = [
@@ -309,6 +345,19 @@ def create_order():
         gamification.total_healthy_meals = current_meals + 1
     
     db.session.commit()
+    
+    # Send email notification via Formspree
+    email_data = {
+        'order_id': order.id,
+        'student_name': current_user.name,
+        'student_id': current_user.student_id or 'N/A',
+        'class_name': current_user.class_name or 'N/A',
+        'total_amount': total,
+        'order_date': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'items_list': '\n'.join([f"{item.menu_item.name} x{item.quantity} - ₹{item.price * item.quantity}" for item in order.items]),
+        'status': order.status
+    }
+    send_order_email(email_data)
     
     return jsonify({
         'message': 'Order placed successfully',

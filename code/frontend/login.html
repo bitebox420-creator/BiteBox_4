@@ -69,21 +69,6 @@
             <div class="auth-footer">
                 <p>Don't have an account? <a href="/register">Create Account</a></p>
             </div>
-
-            <div class="demo-accounts">
-                <h4><i class="fas fa-info-circle"></i> Demo Accounts</h4>
-                <div class="demo-grid">
-                    <button onclick="fillDemo('student@demo.com', 'demo123')" class="demo-btn">
-                        <i class="fas fa-graduation-cap"></i> Student
-                    </button>
-                    <button onclick="fillDemo('parent@demo.com', 'demo123')" class="demo-btn">
-                        <i class="fas fa-user-friends"></i> Parent
-                    </button>
-                    <button onclick="fillDemo('admin@demo.com', 'demo123')" class="demo-btn">
-                        <i class="fas fa-user-shield"></i> Admin
-                    </button>
-                </div>
-            </div>
         </div>
 
         <div class="auth-illustration">
@@ -130,11 +115,6 @@
                 input.type = 'password';
                 icon.classList.replace('fa-eye-slash', 'fa-eye');
             }
-        }
-
-        function fillDemo(email, password) {
-            document.getElementById('email').value = email;
-            document.getElementById('password').value = password;
         }
 
         async function handleLogin(e) {

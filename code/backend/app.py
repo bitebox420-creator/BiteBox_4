@@ -123,13 +123,15 @@ def register():
     if User.query.filter_by(email=data['email']).first():
         return jsonify({'error': 'Email already registered'}), 400
     
+    role = data.get('role', 'student')
+    
     user = User(
         email=data['email'],
         name=data['name'],
         password_hash=generate_password_hash(data['password']),
-        role=data.get('role', 'student'),
-        student_id=data.get('student_id'),
-        class_name=data.get('class_name')
+        role=role,
+        student_id=data.get('student_id') if role == 'student' else None,
+        class_name=data.get('class_name') if role == 'student' else None
     )
     db.session.add(user)
     db.session.commit()

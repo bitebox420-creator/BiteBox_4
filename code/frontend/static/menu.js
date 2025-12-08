@@ -28,7 +28,8 @@ async function loadMenu() {
     try {
         const response = await fetch('/api/menu');
         const data = await response.json();
-        menuItems = data.items || [];
+        // Filter only vegetarian items
+        menuItems = (data.items || []).filter(item => item.is_vegetarian === true);
         renderMenu();
         renderCategories();
     } catch (error) {

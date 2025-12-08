@@ -1378,15 +1378,30 @@ body {
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
+    font-size: 1rem;
+    z-index: 1;
 }
 
 .search-box input {
     width: 100%;
     padding: 0.75rem 1rem 0.75rem 2.5rem;
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 10px;
     background: var(--bg-primary);
     color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+}
+
+.search-box input::placeholder {
+    color: var(--text-muted);
 }
 
 .ai-search-box {
@@ -1427,7 +1442,16 @@ body {
 
 .filter-section h4 {
     margin-bottom: 0.75rem;
-    color: var(--text-secondary);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-section h4 i {
+    color: var(--primary);
 }
 
 .category-filters {
@@ -1464,6 +1488,21 @@ body {
     margin-bottom: 0.5rem;
     cursor: pointer;
     color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.dietary-filters label:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.dietary-filters input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary);
 }
 
 .menu-main { min-height: 500px; }
@@ -1481,10 +1520,23 @@ body {
 
 #sortBy {
     padding: 0.5rem 1rem;
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: 8px;
     background: var(--bg-primary);
     color: var(--text-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#sortBy:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+#sortBy:hover {
+    border-color: var(--primary);
 }
 
 .cart-sidebar {

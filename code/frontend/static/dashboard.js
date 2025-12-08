@@ -29,9 +29,9 @@ async function loadDashboardData() {
     try {
         const ordersRes = await fetch('/api/orders');
         const orders = await ordersRes.json();
-        
+
         document.getElementById('totalOrders').textContent = orders.length;
-        
+
         const today = new Date().toDateString();
         const todayOrders = orders.filter(o => new Date(o.created_at).toDateString() === today);
         let todayCals = 0;
@@ -41,7 +41,7 @@ async function loadDashboardData() {
             });
         });
         document.getElementById('todayCalories').textContent = todayCals;
-        
+
         const recentList = document.getElementById('recentOrdersList');
         if (recentList) {
             const recent = orders.slice(0, 5);
@@ -59,7 +59,7 @@ async function loadDashboardData() {
                 `).join('');
             }
         }
-        
+
         const ordersList = document.getElementById('ordersList');
         if (ordersList) {
             if (orders.length === 0) {
@@ -102,7 +102,7 @@ async function loadMenu() {
 function renderMenuGrid() {
     const grid = document.getElementById('menuGrid');
     if (!grid) return;
-    
+
     grid.innerHTML = menuItems.map(item => `
         <div class="menu-item">
             <div class="menu-item-image" style="background-image: url('${item.image_url}')">
@@ -129,7 +129,7 @@ function renderMenuGrid() {
 function renderPopularItems() {
     const container = document.getElementById('popularItems');
     if (!container) return;
-    
+
     const popular = menuItems.filter(i => i.health_score >= 8).slice(0, 4);
     container.innerHTML = popular.map(item => `
         <div class="popular-item" onclick="addToCart(${JSON.stringify(item).replace(/"/g, '&quot;')})">
@@ -146,17 +146,17 @@ async function loadGamification() {
     try {
         const statsRes = await fetch('/api/gamification/stats');
         const stats = await statsRes.json();
-        
+
         document.getElementById('healthPoints').textContent = stats.health_points || 0;
         document.getElementById('totalPoints').textContent = stats.health_points || 0;
         document.getElementById('healthScore').textContent = stats.health_points || 0;
-        
+
         const leaderRes = await fetch('/api/gamification/leaderboard');
         const leaderboard = await leaderRes.json();
-        
+
         const currentRank = leaderboard.findIndex(u => u.name === currentUser?.name) + 1;
         document.getElementById('leaderRank').textContent = currentRank ? `#${currentRank}` : 'N/A';
-        
+
         const leaderList = document.getElementById('leaderboard');
         if (leaderList) {
             leaderList.innerHTML = leaderboard.map((user, idx) => `
@@ -174,40 +174,137 @@ async function loadGamification() {
 
 async function loadSubscriptions() {
     try {
-        const response = await fetch('/api/subscriptions/plans');
-        const plans = await response.json();
-        
+        const response = await fetch('/api/subscriptions');
+        const data = await response.json();
+
         const container = document.getElementById('subscriptionPlans');
-        if (container) {
-            container.innerHTML = plans.map(plan => `
-                <div class="subscription-card">
-                    <h3>${plan.name}</h3>
-                    <p>${plan.description}</p>
-                    <div class="plan-price">
-                        <span class="price">₹${plan.price}</span>
-                        <span class="period">/${plan.plan_type}</span>
-                    </div>
-                    <ul class="plan-features">
-                        <li><i class="fas fa-check"></i> ${plan.meals_per_week} meals</li>
-                        <li><i class="fas fa-check"></i> ${plan.discount_percentage}% discount</li>
-                    </ul>
-                    <button onclick="subscribeToPlan(${plan.id})" class="btn-primary btn-full">Subscribe</button>
-                </div>
-            `).join('');
+        if (!container) return;
+
+        if (data.length === 0) {
+            container.innerHTML = '<p>No active subscriptions</p>';
+            return;
         }
+
+        container.innerHTML = data.map(sub => `
+            <div class="subscription-card">
+                <h3>${sub.plan_name}</h3>
+                <p>Start: ${new Date(sub.start_date).toLocaleDateString()}</p>
+                ${sub.end_date ? `<p>End: ${new Date(sub.end_date).toLocaleDateString()}</p>` : ''}
+                <span class="badge ${sub.is_active ? 'badge-success' : 'badge-secondary'}">
+                    ${sub.is_active ? 'Active' : 'Inactive'}
+                </span>
+            </div>
+        `).join('');
     } catch (error) {
-        console.error('Failed to load subscriptions:', error);
+        console.error('Error loading subscriptions:', error);
     }
 }
 
+async function sendAIMessage() {
+    const input = document.getElementById('aiChatInput');
+    const messagesContainer = document.getElementById('chatMessages');
+
+    if (!input || !messagesContainer) return;
+
+    const message = input.value.trim();
+    if (!message) return;
+
+    // Add user message to chat
+    const userMessageDiv = document.createElement('div');
+    userMessageDiv.className = 'user-message';
+    userMessageDiv.innerHTML = `
+        <div class="message-bubble">
+            <i class="fas fa-user"></i>
+            <p>${message}</p>
+        </div>
+    `;
+    messagesContainer.appendChild(userMessageDiv);
+
+    // Clear input
+    input.value = '';
+
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    // Show loading message
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'ai-message';
+    loadingDiv.id = 'loading-message';
+    loadingDiv.innerHTML = `
+        <div class="message-bubble">
+            <i class="fas fa-robot"></i>
+            <p>Thinking...</p>
+        </div>
+    `;
+    messagesContainer.appendChild(loadingDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    try {
+        const response = await fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+
+        // Remove loading message
+        loadingDiv.remove();
+
+        if (response.ok) {
+            // Add AI response
+            const aiMessageDiv = document.createElement('div');
+            aiMessageDiv.className = 'ai-message';
+            aiMessageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <i class="fas fa-robot"></i>
+                    <p>${data.response}</p>
+                </div>
+            `;
+            messagesContainer.appendChild(aiMessageDiv);
+        } else {
+            throw new Error(data.error || 'Failed to get AI response');
+        }
+    } catch (error) {
+        loadingDiv.remove();
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'ai-message';
+        errorDiv.innerHTML = `
+            <div class="message-bubble">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p style="color: var(--danger);">Sorry, I encountered an error. Please try again.</p>
+            </div>
+        `;
+        messagesContainer.appendChild(errorDiv);
+        console.error('AI Chat Error:', error);
+    }
+
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Allow Enter key to send message
+document.addEventListener('DOMContentLoaded', () => {
+    const chatInput = document.getElementById('aiChatInput');
+    if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendAIMessage();
+            }
+        });
+    }
+});
+
+
 async function subscribeToPlan(planId) {
     try {
-        const response = await fetch('/api/subscriptions', {
+        const response = await fetch('/api/subscriptions/plans', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ plan_id: planId })
         });
-        
+
         if (response.ok) {
             showToast('Subscription activated!', 'success');
         } else {
@@ -221,41 +318,41 @@ async function subscribeToPlan(planId) {
 
 async function calculateBMI(e) {
     e.preventDefault();
-    
+
     const height = parseFloat(document.getElementById('height').value);
     const weight = parseFloat(document.getElementById('weight').value);
-    
+
     if (!height || !weight) {
         showToast('Please enter height and weight', 'error');
         return;
     }
-    
+
     try {
         const response = await fetch('/api/health/profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ height, weight })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             const bmi = data.bmi;
             let category = '';
             let color = '';
-            
+
             if (bmi < 18.5) { category = 'Underweight'; color = '#f59e0b'; }
             else if (bmi < 25) { category = 'Normal'; color = '#10b981'; }
             else if (bmi < 30) { category = 'Overweight'; color = '#f59e0b'; }
             else { category = 'Obese'; color = '#ef4444'; }
-            
+
             document.getElementById('bmiResult').innerHTML = `
                 <div class="bmi-display" style="color: ${color}">
                     <h2>${bmi}</h2>
                     <p>${category}</p>
                 </div>
             `;
-            
+
             loadDietPlan();
         }
     } catch (error) {
@@ -267,7 +364,7 @@ async function loadDietPlan() {
     try {
         const response = await fetch('/api/health/diet-plan');
         const plan = await response.json();
-        
+
         const container = document.getElementById('dietPlanContent');
         if (container && plan.plan) {
             container.innerHTML = `
@@ -303,14 +400,14 @@ async function loadDietPlan() {
 async function saveHealthProfile() {
     const allergies = [...document.querySelectorAll('.allergy-options input:checked')].map(i => i.value);
     const preferences = [...document.querySelectorAll('.preference-options input:checked')].map(i => i.value);
-    
+
     try {
         const response = await fetch('/api/health/profile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ allergies, dietary_preferences: preferences })
         });
-        
+
         if (response.ok) {
             showToast('Health profile saved!', 'success');
         }
@@ -321,21 +418,21 @@ async function saveHealthProfile() {
 
 async function redeemPoints() {
     const points = parseInt(document.getElementById('totalPoints').textContent);
-    
+
     if (points < 100) {
         showToast('Need at least 100 points to redeem', 'error');
         return;
     }
-    
+
     try {
         const response = await fetch('/api/gamification/redeem', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ points: 100 })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             showToast(`Redeemed! You got ₹${data.discount} discount`, 'success');
             loadGamification();
@@ -364,7 +461,7 @@ function setupNavigation() {
             }
         });
     });
-    
+
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -389,7 +486,7 @@ function setupNavigation() {
 function renderFilteredMenu(items) {
     const grid = document.getElementById('menuGrid');
     if (!grid) return;
-    
+
     grid.innerHTML = items.map(item => `
         <div class="menu-item">
             <div class="menu-item-image" style="background-image: url('${item.image_url}')">

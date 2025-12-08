@@ -1114,6 +1114,50 @@ def generate_admin_report(report_type):
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f'{report_type}_report_{today.strftime("%Y_%m_%d")}.pdf', mimetype='application/pdf')
 
+# ==================== AI CHAT API ====================
+
+@app.route('/api/ai/chat', methods=['POST'])
+@login_required
+def ai_chat():
+    from google import genai
+    
+    data = request.json
+    user_message = data.get('message', '')
+    
+    if not user_message:
+        return jsonify({'error': 'Message is required'}), 400
+    
+    try:
+        # Initialize Gemini client
+        client = genai.Client(api_key="AIzaSyBONjV4J1h3W-4xQeO7wgkBLxqnp8nCh3g")
+        
+        # Get user's health profile for context
+        profile = HealthProfile.query.filter_by(user_id=current_user.id).first()
+        context = f"You are a nutrition and health assistant for BiteBox Smart Canteen. "
+        
+        if profile:
+            context += f"The user has a BMI of {profile.bmi}, fitness goal: {profile.fitness_goal}. "
+            if profile.allergies:
+                context += f"Allergies: {profile.allergies}. "
+        
+        context += "Provide helpful, accurate, and concise answers about nutrition, healthy eating, menu items, and wellness. Keep responses under 150 words."
+        
+        # Generate response
+        full_prompt = f"{context}\n\nUser question: {user_message}"
+        response = client.models.generate_content(
+            model="gemini-2.0-flash-exp",
+            contents=full_prompt
+        )
+        
+        return jsonify({
+            'response': response.text,
+            'timestamp': datetime.utcnow().isoformat()
+        })
+        
+    except Exception as e:
+        print(f"AI Chat Error: {e}")
+        return jsonify({'error': 'Failed to get AI response. Please try again.'}), 500
+
 # ==================== FEEDBACK API ====================
 
 @app.route('/api/feedback', methods=['GET', 'POST'])

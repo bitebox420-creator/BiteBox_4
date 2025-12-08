@@ -77,7 +77,7 @@ def seed_menu_items():
         {"name": "Greek Yogurt", "category": "Proteins", "price": 35, "calories": 130, "protein": 15, "carbs": 8, "fats": 4, "health_score": 9, "is_vegetarian": True, "image_url": "https://images.unsplash.com/photo-1488477304112-4944851de03d?w=400", "description": "Probiotic-rich Greek yogurt"},
         {"name": "Coconut Water", "category": "Beverages", "price": 30, "calories": 45, "protein": 0, "carbs": 11, "fats": 0, "health_score": 8, "is_vegetarian": True, "is_vegan": True, "image_url": "https://images.unsplash.com/photo-1585121267405-24a4ee8a5cde?w=400", "description": "Natural electrolyte drink"},
         {"name": "Mixed Nuts", "category": "Snacks", "price": 35, "calories": 160, "protein": 5, "carbs": 6, "fats": 14, "health_score": 8, "is_vegetarian": True, "is_vegan": True, "image_url": "https://images.unsplash.com/photo-1599599810694-57a2ca8276a8?w=400", "description": "Almonds, walnuts, and cashews mix"},
-        {"name": "Grilled Chicken Wrap", "category": "Meals", "price": 75, "calories": 320, "protein": 28, "carbs": 25, "fats": 12, "health_score": 8, "image_url": "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400", "description": "High protein grilled chicken wrap"},
+        
         {"name": "Fresh Orange Juice", "category": "Beverages", "price": 35, "calories": 110, "protein": 2, "carbs": 26, "fats": 0, "health_score": 8, "is_vegetarian": True, "is_vegan": True, "image_url": "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400", "description": "Freshly squeezed orange juice"},
         {"name": "Brown Rice Bowl", "category": "Meals", "price": 55, "calories": 195, "protein": 4, "carbs": 45, "fats": 2, "health_score": 8, "is_vegetarian": True, "is_vegan": True, "image_url": "https://images.unsplash.com/photo-1586201375761-8e865001e31c?w=400", "description": "Nutty brown rice with steamed vegetables"},
         {"name": "Paneer Tikka", "category": "Proteins", "price": 60, "calories": 250, "protein": 18, "carbs": 8, "fats": 16, "health_score": 7, "is_vegetarian": True, "image_url": "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400", "description": "Grilled cottage cheese with Indian spices"},
@@ -215,7 +215,7 @@ def get_current_user():
 @app.route('/api/menu')
 def get_menu():
     category = request.args.get('category')
-    query = MenuItem.query.filter_by(is_available=True)
+    query = MenuItem.query.filter_by(is_available=True, is_vegetarian=True)
     
     if category:
         query = query.filter_by(category=category)
@@ -252,7 +252,7 @@ def search_menu():
     max_calories = request.args.get('max_calories', type=int)
     vegetarian = request.args.get('vegetarian', type=bool)
     
-    items = MenuItem.query.filter(MenuItem.is_available == True)
+    items = MenuItem.query.filter(MenuItem.is_available == True, MenuItem.is_vegetarian == True)
     
     if query:
         items = items.filter(MenuItem.name.ilike(f'%{query}%') | MenuItem.description.ilike(f'%{query}%'))

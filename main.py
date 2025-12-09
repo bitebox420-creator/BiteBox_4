@@ -1,6 +1,12 @@
-def main():
-    print("Hello from repl-nix-workspace!")
 
+import sys
+import os
+
+# Add the backend directory to the Python path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'code', 'backend'))
+
+# Import the Flask app
+from app import app
 
 if __name__ == "__main__":
-    main()
+    app.run(host='0.0.0.0', port=5000, debug=True)

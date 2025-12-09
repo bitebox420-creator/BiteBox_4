@@ -24,7 +24,7 @@ db.init_app(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login_page'
+login_manager.login_view = 'login_page'  # type: ignore
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -85,7 +85,7 @@ def seed_menu_items():
     ]
     
     for item in items:
-        menu_item = MenuItem(
+        menu_item = MenuItem(  # type: ignore
             name=item["name"],
             category=item["category"],
             price=item["price"],
@@ -161,7 +161,7 @@ def register():
     
     role = data.get('role', 'student')
     
-    user = User(
+    user = User(  # type: ignore
         email=data['email'],
         name=data['name'],
         password_hash=generate_password_hash(data['password']),
@@ -172,8 +172,8 @@ def register():
     db.session.add(user)
     db.session.commit()
     
-    health_profile = HealthProfile(user_id=user.id)
-    gamification = Gamification(user_id=user.id)
+    health_profile = HealthProfile(user_id=user.id)  # type: ignore
+    gamification = Gamification(user_id=user.id)  # type: ignore
     db.session.add(health_profile)
     db.session.add(gamification)
     db.session.commit()
@@ -310,7 +310,7 @@ def create_order():
         if menu_item.health_score >= 7:
             health_points_earned += menu_item.health_score * item_data['quantity']
     
-    order = Order(
+    order = Order(  # type: ignore
         student_id=current_user.id,
         total_amount=total,
         order_type=data.get('order_type', 'regular'),
@@ -322,7 +322,7 @@ def create_order():
     db.session.flush()
     
     for item_info in order_items_to_add:
-        order_item = OrderItem(
+        order_item = OrderItem(  # type: ignore
             order_id=order.id,
             menu_item_id=item_info['menu_item'].id,
             quantity=item_info['quantity'],
@@ -333,7 +333,7 @@ def create_order():
     
     gamification = Gamification.query.filter_by(user_id=current_user.id).first()
     if not gamification:
-        gamification = Gamification(user_id=current_user.id, health_points=0, total_healthy_meals=0, streak_days=0, rank=0)
+        gamification = Gamification(user_id=current_user.id, health_points=0, total_healthy_meals=0, streak_days=0, rank=0)  # type: ignore
         db.session.add(gamification)
         db.session.flush()
     
@@ -354,7 +354,7 @@ def create_order():
         'class_name': current_user.class_name or 'N/A',
         'total_amount': total,
         'order_date': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-        'items_list': '\n'.join([f"{item.menu_item.name} x{item.quantity} - ₹{item.price * item.quantity}" for item in order.items]),
+        'items_list': '\n'.join([f"{item.menu_item.name} x{item.quantity} - ₹{item.price * item.quantity}" for item in order.items]),  # type: ignore
         'status': order.status
     }
     send_order_email(email_data)
@@ -373,11 +373,11 @@ def get_orders():
     
     if current_user.role == 'admin' or current_user.role == 'vendor':
         orders = Order.query.options(
-            joinedload(Order.items).joinedload(OrderItem.menu_item)
+            joinedload(Order.items).joinedload(OrderItem.menu_item)  # type: ignore
         ).order_by(Order.created_at.desc()).all()
     else:
         orders = Order.query.filter_by(student_id=current_user.id).options(
-            joinedload(Order.items).joinedload(OrderItem.menu_item)
+            joinedload(Order.items).joinedload(OrderItem.menu_item)  # type: ignore
         ).order_by(Order.created_at.desc()).all()
     
     return jsonify([{
@@ -404,7 +404,7 @@ def update_order_status(order_id):
     order.status = data['status']
     db.session.commit()
     
-    notification = Notification(
+    notification = Notification(  # type: ignore
         user_id=order.student_id,
         title=f'Order #{order.id} Update',
         message=f'Your order status has been updated to: {order.status}',
@@ -480,7 +480,7 @@ def manage_parental_controls(child_id):
         control = ParentalControl.query.filter_by(parent_id=current_user.id, child_id=child_id).first()
         
         if not control:
-            control = ParentalControl(parent_id=current_user.id, child_id=child_id)
+            control = ParentalControl(parent_id=current_user.id, child_id=child_id)  # type: ignore
             db.session.add(control)
         
         control.approved_items = json.dumps(data.get('approved_items', []))
@@ -593,7 +593,7 @@ def manage_health_profile():
     if request.method == 'POST':
         data = request.json
         if not profile:
-            profile = HealthProfile(user_id=current_user.id)
+            profile = HealthProfile(user_id=current_user.id)  # type: ignore
             db.session.add(profile)
         
         profile.height = data.get('height')
@@ -665,7 +665,7 @@ def get_gamification_stats():
     stats = Gamification.query.filter_by(user_id=current_user.id).first()
     
     if not stats:
-        stats = Gamification(user_id=current_user.id)
+        stats = Gamification(user_id=current_user.id)  # type: ignore
         db.session.add(stats)
         db.session.commit()
     
@@ -741,7 +741,7 @@ def manage_subscriptions():
         
         end_date = datetime.utcnow() + timedelta(days=30 if plan.plan_type == 'monthly' else 7)
         
-        subscription = Subscription(
+        subscription = Subscription(  # type: ignore
             user_id=current_user.id,
             plan_id=plan.id,
             end_date=end_date
@@ -912,7 +912,7 @@ def get_parent_activity():
     
     from sqlalchemy.orm import joinedload
     recent_orders = Order.query.filter(Order.student_id.in_(child_ids)).options(
-        joinedload(Order.items).joinedload(OrderItem.menu_item)
+        joinedload(Order.items).joinedload(OrderItem.menu_item)  # type: ignore
     ).order_by(Order.created_at.desc()).limit(10).all()
     
     activities = []
@@ -947,7 +947,7 @@ def get_parent_stats():
     orders = Order.query.filter(
         Order.student_id.in_(child_ids),
         Order.created_at >= month_start
-    ).options(joinedload(Order.items).joinedload(OrderItem.menu_item)).all()
+    ).options(joinedload(Order.items).joinedload(OrderItem.menu_item)).all()  # type: ignore
     
     total_items = 0
     healthy_items = 0
@@ -1165,7 +1165,7 @@ def ai_chat():
 def manage_feedback():
     if request.method == 'POST':
         data = request.json
-        feedback = Feedback(
+        feedback = Feedback(  # type: ignore
             user_id=current_user.id,
             rating=data['rating'],
             comment=data.get('comment'),

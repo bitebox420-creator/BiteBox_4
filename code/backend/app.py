@@ -39,7 +39,7 @@ def send_order_email(order_data):
     
     Order ID: {order_data['order_id']}
     Student Name: {order_data['student_name']}
-    Student ID: {order_data['student_id']}
+    Admission No.: {order_data['student_id']}
     Class: {order_data['class_name']}
     Total Amount: ₹{order_data['total_amount']}
     Order Date: {order_data['order_date']}

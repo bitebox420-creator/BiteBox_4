@@ -12,7 +12,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(255))
     role = db.Column(db.String(20), default='student')  # student, parent, admin, vendor, nurse
-    student_id = db.Column(db.String(50), unique=True)
+    student_id = db.Column(db.String(50), unique=True)  # Admission No. (e.g., 18/266)
     class_name = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     

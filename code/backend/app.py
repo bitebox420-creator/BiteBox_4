@@ -16,7 +16,23 @@ from models import db, User, HealthProfile, MenuItem, Order, OrderItem, Invoice,
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/static')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'bitebox-secret-key-2024')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+
+# Configure database URI
+database_url = os.environ.get('DATABASE_URL')
+if not database_url or not database_url.startswith(('postgresql://', 'postgresql+psycopg2://')):
+    # Build from individual environment variables if DATABASE_URL is not available
+    pg_user = os.environ.get('PGUSER', 'postgres')
+    pg_password = os.environ.get('PGPASSWORD', '')
+    pg_host = os.environ.get('PGHOST', 'localhost')
+    pg_port = os.environ.get('PGPORT', '5432')
+    pg_database = os.environ.get('PGDATABASE', 'bitebox_db')
+    
+    if pg_password:
+        database_url = f'postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}'
+    else:
+        database_url = f'postgresql://{pg_user}@{pg_host}:{pg_port}/{pg_database}'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 CORS(app, supports_credentials=True)

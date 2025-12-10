@@ -12,7 +12,7 @@ import json
 import random
 import requests
 
-from models import db, User, HealthProfile, MenuItem, Order, OrderItem, Invoice, SubscriptionPlan, Subscription, ParentalControl, Gamification, Notification, Feedback, Analytics
+from .models import db, User, HealthProfile, MenuItem, Order, OrderItem, Invoice, SubscriptionPlan, Subscription, ParentalControl, Gamification, Notification, Feedback, Analytics
 
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/static')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'bitebox-secret-key-2024')

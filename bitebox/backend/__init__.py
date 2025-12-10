@@ -235,13 +235,13 @@ Static File Issues:
 Module Usage
 =====================================
 Importing the App:
-  from code.backend import app, db
+  from bitebox.backend import app, db
 
 Running Locally:
   python main.py
 
 Running with Gunicorn:
-  gunicorn code.backend.app:app
+  gunicorn bitebox.backend.app:app
 
 Environment Requirements:
   - Python 3.11+

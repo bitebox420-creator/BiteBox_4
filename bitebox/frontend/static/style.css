@@ -1586,6 +1586,10 @@ body::before {
 }
 
 .demo-showcase-section {
+    padding: 5rem 2rem;
+    background: var(--bg-secondary);
+}
+
 .demo-comparison {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -1760,6 +1764,9 @@ body::before {
 }
 
 .testimonials-section {
+    padding: 5rem 2rem;
+}
+
 .testimonials-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1865,6 +1872,10 @@ body::before {
 }
 
 .faq-section {
+    padding: 5rem 2rem;
+    background: var(--bg-secondary);
+}
+
 .faq-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1913,6 +1924,10 @@ body::before {
 }
 
 .contact-section {
+    padding: 5rem 2rem;
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(255, 107, 53, 0.1) 100%);
+}
+
 .contact-content {
     display: grid;
     grid-template-columns: 1fr 1fr;

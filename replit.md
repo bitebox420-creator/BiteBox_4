@@ -17,15 +17,16 @@ The system provides:
 
 ## Recent Updates (December 2025)
 
-### Homepage Improvements
-- **Silverline Prestige School Branding**: Updated hero section with headline "Smart Canteen Management for Silverline Prestige School"
-- **Exclusive School Platform**: Emphasized that BiteBox is deployed exclusively for Silverline Prestige School (Ghaziabad)
-- **Working Parent & Admin Dashboards**: Added direct links to fully functional Parent and Admin dashboards
-- **Visual Demo Section**: Added side-by-side mockups showing Parent vs Student dashboard views
-- **Testimonials**: Added testimonial cards from Parent, Student, and School Admin with quantified impact
-- **Improved CTAs**: Schedule Demo button, prominent Login, and direct dashboard access links
-- **FAQ Section**: Covers integration, deployment, security, and pricing
-- **Contact Form**: Demo request form for school administrators
+### Complete Redesign (December 2025)
+- **Techy Design**: Dark theme with minimal, developer-style aesthetics (not AI-marketing style)
+- **Removed AI-Generated Content**: No testimonials, demos, FAQ sections, or contact forms
+- **Silverline Prestige School Only**: Platform exclusively for this school
+- **Working Dashboards**:
+  - `/parent_dashboard` - Monitor children, spending limits, nutrition reports, parental controls
+  - `/admin_dashboard` - Menu management, orders, inventory, analytics, user management  
+  - `/student_dashboard` - Order meals, track nutrition, earn points
+- **Role-Based Authentication**: Users redirected to role-specific dashboard after login
+- **Clean Tech Stack**: JetBrains Mono + Inter fonts, GitHub-style dark theme
 
 ## User Preferences
 

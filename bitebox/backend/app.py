@@ -162,6 +162,27 @@ def dashboard():
         return render_template('vendor_dashboard.html')
     return render_template('student_dashboard.html')
 
+@app.route('/parent_dashboard')
+@login_required
+def parent_dashboard():
+    if current_user.role != 'parent':
+        return redirect(url_for('dashboard'))
+    return render_template('parent_dashboard.html')
+
+@app.route('/admin_dashboard')
+@login_required
+def admin_dashboard():
+    if current_user.role != 'admin':
+        return redirect(url_for('dashboard'))
+    return render_template('admin_dashboard.html')
+
+@app.route('/student_dashboard')
+@login_required
+def student_dashboard():
+    if current_user.role != 'student':
+        return redirect(url_for('dashboard'))
+    return render_template('student_dashboard.html')
+
 @app.route('/menu')
 def menu_page():
     return render_template('menu.html')

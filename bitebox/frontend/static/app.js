@@ -35,20 +35,6 @@ function toggleLanguage() {
     showToast('Language switching coming soon!', 'info');
 }
 
-function handleDemoRequest(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    
-    showToast('Thank you! We will contact you within 24 hours to schedule your demo.', 'success');
-    form.reset();
-    
-    setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 2000);
-}
-
 function setupNavigation() {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', (e) => {

@@ -15,14 +15,14 @@ class User(UserMixin, db.Model):
     student_id = db.Column(db.String(50), unique=True)  # Admission No. (e.g., 18/266)
     class_name = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     # Parent-Child relationship (self-referential)
     parent_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    
+
     # Health profile
     health_profile = db.relationship('HealthProfile', backref='user', uselist=False)
     orders = db.relationship('Order', backref='student', lazy=True)
-    
+
     def get_children(self):
         return User.query.filter_by(parent_id=self.id).all()
 
@@ -73,7 +73,7 @@ class Order(db.Model):
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     items = db.relationship('OrderItem', backref='order', lazy=True, cascade='all, delete-orphan')
     invoice = db.relationship('Invoice', backref='order', uselist=False)
 
@@ -84,7 +84,7 @@ class OrderItem(db.Model):
     menu_item_id = db.Column(db.Integer, db.ForeignKey('menu_items.id'), nullable=False)
     quantity = db.Column(db.Integer, default=1)
     price = db.Column(db.Float)
-    
+
     menu_item = db.relationship('MenuItem', backref='order_items')
 
 class Invoice(db.Model):
@@ -117,7 +117,7 @@ class Subscription(db.Model):
     start_date = db.Column(db.DateTime, default=datetime.utcnow)
     end_date = db.Column(db.DateTime)
     is_active = db.Column(db.Boolean, default=True)
-    
+
     plan = db.relationship('SubscriptionPlan', backref='subscriptions')
 
 class ParentalControl(db.Model):

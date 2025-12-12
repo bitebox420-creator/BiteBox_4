@@ -1,5 +1,5 @@
 let menuItems = [];
-let menuCart = JSON.parse(localStorage.getItem('cart') || '[]');
+let cart = JSON.parse(localStorage.getItem('cart') || '[]');
 let currentFilter = 'all';
 
 // Default images for each category
@@ -18,7 +18,6 @@ function getImageForItem(item) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Menu page loaded');
     loadMenu();
     updateCartUI();
     setupFilters();
@@ -26,22 +25,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadMenu() {
-    console.log('Loading menu...');
     try {
         const response = await fetch('/api/menu');
-        console.log('API response status:', response.status);
         const data = await response.json();
-        console.log('API data:', data);
-        // API returns array directly, or data.items for backwards compatibility
-        const items = Array.isArray(data) ? data : (data.items || []);
-        console.log('Items count:', items.length);
-        // All items are already vegetarian from API
-        menuItems = items;
-        console.log('Menu items set:', menuItems.length);
+        // Filter only vegetarian items
+        menuItems = (data.items || []).filter(item => item.is_vegetarian === true);
         renderMenu();
         renderCategories();
     } catch (error) {
         console.error('Error loading menu:', error);
+        showToast('Failed to load menu', 'error');
     }
 }
 
@@ -166,33 +159,31 @@ function addToCart(itemId) {
     const item = menuItems.find(i => i.id === itemId);
     if (!item) return;
 
-    const existingItem = menuCart.find(i => i.id === itemId);
+    const existingItem = cart.find(i => i.id === itemId);
     if (existingItem) {
         existingItem.quantity++;
     } else {
-        menuCart.push({ ...item, quantity: 1 });
+        cart.push({ ...item, quantity: 1 });
     }
 
-    localStorage.setItem('cart', JSON.stringify(menuCart));
+    localStorage.setItem('cart', JSON.stringify(cart));
     updateCartUI();
     showToast(`${item.name} added to cart!`, 'success');
 }
 
 function updateCartUI() {
-    const count = menuCart.reduce((sum, item) => sum + item.quantity, 0);
-    const total = menuCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-    const cartCountEl = document.getElementById('cartCount');
-    const cartTotalEl = document.getElementById('cartTotal');
-    if (cartCountEl) cartCountEl.textContent = count;
-    if (cartTotalEl) cartTotalEl.textContent = `₹${total}`;
+    document.getElementById('cartCount').textContent = count;
+    document.getElementById('cartTotal').textContent = `₹${total}`;
 
     const cartItems = document.getElementById('cartItems');
     if (cartItems) {
-        if (menuCart.length === 0) {
+        if (cart.length === 0) {
             cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
         } else {
-            cartItems.innerHTML = menuCart.map(item => `
+            cartItems.innerHTML = cart.map(item => `
                 <div class="cart-item">
                     <div class="cart-item-info">
                         <h4>${item.name}</h4>
@@ -210,15 +201,15 @@ function updateCartUI() {
 }
 
 function updateQuantity(itemId, change) {
-    const item = menuCart.find(i => i.id === itemId);
+    const item = cart.find(i => i.id === itemId);
     if (!item) return;
 
     item.quantity += change;
     if (item.quantity <= 0) {
-        menuCart = menuCart.filter(i => i.id !== itemId);
+        cart = cart.filter(i => i.id !== itemId);
     }
 
-    localStorage.setItem('cart', JSON.stringify(menuCart));
+    localStorage.setItem('cart', JSON.stringify(cart));
     updateCartUI();
 }
 

@@ -12,8 +12,7 @@ import json
 import random
 import requests
 
-from .models import db, User, HealthProfile, MenuItem, Order, OrderItem, Invoice, SubscriptionPlan, Subscription, ParentalControl, Gamification, Notification, Feedback, Analytics
-
+from models import db, User, HealthProfile, MenuItem, Order, OrderItem, Invoice, SubscriptionPlan, Subscription, ParentalControl, Gamification, Notification, Feedback, Analytics
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/static')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'bitebox-secret-key-2024')
 
@@ -26,7 +25,7 @@ if not database_url or not database_url.startswith(('postgresql://', 'postgresql
     pg_host = os.environ.get('PGHOST', 'localhost')
     pg_port = os.environ.get('PGPORT', '5432')
     pg_database = os.environ.get('PGDATABASE', 'bitebox_db')
-    
+
     if pg_password:
         database_url = f'postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}'
     else:
@@ -49,23 +48,23 @@ def load_user(user_id):
 def send_order_email(order_data):
     """Send order notification to bitebox105@gmail.com via Formspree"""
     formspree_url = "https://formspree.io/f/movglgrr"
-    
+
     email_content = f"""
     New Order Received!
-    
+
     Order ID: {order_data['order_id']}
     Student Name: {order_data['student_name']}
     Admission No.: {order_data['student_id']}
     Class: {order_data['class_name']}
     Total Amount: ₹{order_data['total_amount']}
     Order Date: {order_data['order_date']}
-    
+
     Items Ordered:
     {order_data['items_list']}
-    
+
     Status: {order_data['status']}
     """
-    
+
     payload = {
         "email": "bitebox105@gmail.com",
         "message": email_content,
@@ -73,7 +72,7 @@ def send_order_email(order_data):
         "student_name": order_data['student_name'],
         "total_amount": order_data['total_amount']
     }
-    
+
     try:
         response = requests.post(formspree_url, json=payload)
         return response.status_code == 200
@@ -93,13 +92,13 @@ def seed_menu_items():
         {"name": "Greek Yogurt", "category": "Proteins", "price": 35, "calories": 130, "protein": 15, "carbs": 8, "fats": 4, "health_score": 9, "is_vegetarian": True, "image_url": "https://images.unsplash.com/photo-1488477304112-4944851de03d?w=400", "description": "Probiotic-rich Greek yogurt"},
         {"name": "Coconut Water", "category": "Beverages", "price": 30, "calories": 45, "protein": 0, "carbs": 11, "fats": 0, "health_score": 8, "is_vegetarian": True, "is_vegan": True, "image_url": "https://images.unsplash.com/photo-1585121267405-24a4ee8a5cde?w=400", "description": "Natural electrolyte drink"},
         {"name": "Mixed Nuts", "category": "Snacks", "price": 35, "calories": 160, "protein": 5, "carbs": 6, "fats": 14, "health_score": 8, "is_vegetarian": True, "is_vegan": True, "image_url": "https://images.unsplash.com/photo-1599599810694-57a2ca8276a8?w=400", "description": "Almonds, walnuts, and cashews mix"},
-        
+
         {"name": "Fresh Orange Juice", "category": "Beverages", "price": 35, "calories": 110, "protein": 2, "carbs": 26, "fats": 0, "health_score": 8, "is_vegetarian": True, "is_vegan": True, "image_url": "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400", "description": "Freshly squeezed orange juice"},
         {"name": "Brown Rice Bowl", "category": "Meals", "price": 55, "calories": 195, "protein": 4, "carbs": 45, "fats": 2, "health_score": 8, "is_vegetarian": True, "is_vegan": True, "image_url": "https://images.unsplash.com/photo-1586201375761-8e865001e31c?w=400", "description": "Nutty brown rice with steamed vegetables"},
         {"name": "Paneer Tikka", "category": "Proteins", "price": 60, "calories": 250, "protein": 18, "carbs": 8, "fats": 16, "health_score": 7, "is_vegetarian": True, "image_url": "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400", "description": "Grilled cottage cheese with Indian spices"},
         {"name": "Masala Dosa", "category": "Breakfast", "price": 40, "calories": 180, "protein": 5, "carbs": 30, "fats": 5, "health_score": 7, "is_vegetarian": True, "is_vegan": True, "image_url": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400", "description": "Crispy South Indian crepe with potato filling"},
     ]
-    
+
     for item in items:
         menu_item = MenuItem(  # type: ignore
             name=item["name"],
@@ -118,17 +117,17 @@ def seed_menu_items():
             stock=random.randint(20, 100)
         )
         db.session.add(menu_item)
-    
+
     plans = [
         {"name": "Weekly Healthy Pack", "description": "5 healthy meals per week", "plan_type": "weekly", "price": 299, "meals_per_week": 5, "discount_percentage": 10},
         {"name": "Monthly Diet Pack", "description": "22 meals per month with personalized diet", "plan_type": "monthly", "price": 999, "meals_per_week": 22, "discount_percentage": 15},
         {"name": "Student Premium Pack", "description": "Daily healthy meals with nutrition tracking", "plan_type": "monthly", "price": 1499, "meals_per_week": 30, "discount_percentage": 20},
     ]
-    
+
     for plan in plans:
         sub_plan = SubscriptionPlan(**plan)
         db.session.add(sub_plan)
-    
+
     db.session.commit()
 
 # Initialize database
@@ -171,12 +170,12 @@ def menu_page():
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     data = request.json
-    
+
     if User.query.filter_by(email=data['email']).first():
         return jsonify({'error': 'Email already registered'}), 400
-    
+
     role = data.get('role', 'student')
-    
+
     user = User(  # type: ignore
         email=data['email'],
         name=data['name'],
@@ -187,13 +186,13 @@ def register():
     )
     db.session.add(user)
     db.session.commit()
-    
+
     health_profile = HealthProfile(user_id=user.id)  # type: ignore
     gamification = Gamification(user_id=user.id)  # type: ignore
     db.session.add(health_profile)
     db.session.add(gamification)
     db.session.commit()
-    
+
     login_user(user)
     return jsonify({'message': 'Registration successful', 'user': {'id': user.id, 'name': user.name, 'role': user.role}})
 
@@ -201,11 +200,11 @@ def register():
 def login():
     data = request.json
     user = User.query.filter_by(email=data['email']).first()
-    
+
     if user and check_password_hash(user.password_hash, data['password']):
         login_user(user)
         return jsonify({'message': 'Login successful', 'user': {'id': user.id, 'name': user.name, 'role': user.role, 'email': user.email}})
-    
+
     return jsonify({'error': 'Invalid credentials'}), 401
 
 @app.route('/api/auth/logout', methods=['POST'])
@@ -232,10 +231,10 @@ def get_current_user():
 def get_menu():
     category = request.args.get('category')
     query = MenuItem.query.filter_by(is_available=True, is_vegetarian=True)
-    
+
     if category:
         query = query.filter_by(category=category)
-    
+
     items = query.all()
     return jsonify([{
         'id': item.id,
@@ -267,9 +266,9 @@ def search_menu():
     min_protein = request.args.get('min_protein', type=float)
     max_calories = request.args.get('max_calories', type=int)
     vegetarian = request.args.get('vegetarian', type=bool)
-    
+
     items = MenuItem.query.filter(MenuItem.is_available == True, MenuItem.is_vegetarian == True)
-    
+
     if query:
         items = items.filter(MenuItem.name.ilike(f'%{query}%') | MenuItem.description.ilike(f'%{query}%'))
     if max_price:
@@ -280,7 +279,7 @@ def search_menu():
         items = items.filter(MenuItem.calories <= max_calories)
     if vegetarian:
         items = items.filter(MenuItem.is_vegetarian == True)
-    
+
     return jsonify([{
         'id': item.id,
         'name': item.name,
@@ -299,14 +298,14 @@ def search_menu():
 @login_required
 def create_order():
     data = request.json
-    
+
     if not data or not data.get('items') or len(data['items']) == 0:
         return jsonify({'error': 'Cart is empty'}), 400
-    
+
     total = 0
     health_points_earned = 0
     order_items_to_add = []
-    
+
     for item_data in data['items']:
         menu_item = MenuItem.query.get(item_data['menu_item_id'])
         if not menu_item:
@@ -315,17 +314,17 @@ def create_order():
             return jsonify({'error': f'{menu_item.name} is not available'}), 400
         if menu_item.stock < item_data['quantity']:
             return jsonify({'error': f'Insufficient stock for {menu_item.name}. Only {menu_item.stock} available'}), 400
-        
+
         order_items_to_add.append({
             'menu_item': menu_item,
             'quantity': item_data['quantity'],
             'price': menu_item.price
         })
         total += menu_item.price * item_data['quantity']
-        
+
         if menu_item.health_score >= 7:
             health_points_earned += menu_item.health_score * item_data['quantity']
-    
+
     order = Order(  # type: ignore
         student_id=current_user.id,
         total_amount=total,
@@ -336,7 +335,7 @@ def create_order():
     )
     db.session.add(order)
     db.session.flush()
-    
+
     for item_info in order_items_to_add:
         order_item = OrderItem(  # type: ignore
             order_id=order.id,
@@ -346,22 +345,22 @@ def create_order():
         )
         db.session.add(order_item)
         item_info['menu_item'].stock -= item_info['quantity']
-    
+
     gamification = Gamification.query.filter_by(user_id=current_user.id).first()
     if not gamification:
         gamification = Gamification(user_id=current_user.id, health_points=0, total_healthy_meals=0, streak_days=0, rank=0)  # type: ignore
         db.session.add(gamification)
         db.session.flush()
-    
+
     current_points = gamification.health_points or 0
     current_meals = gamification.total_healthy_meals or 0
-    
+
     gamification.health_points = current_points + health_points_earned
     if health_points_earned > 0:
         gamification.total_healthy_meals = current_meals + 1
-    
+
     db.session.commit()
-    
+
     # Send email notification via Formspree
     email_data = {
         'order_id': order.id,
@@ -374,7 +373,7 @@ def create_order():
         'status': order.status
     }
     send_order_email(email_data)
-    
+
     return jsonify({
         'message': 'Order placed successfully',
         'order_id': order.id,
@@ -386,7 +385,7 @@ def create_order():
 @login_required
 def get_orders():
     from sqlalchemy.orm import joinedload
-    
+
     if current_user.role == 'admin' or current_user.role == 'vendor':
         orders = Order.query.options(
             joinedload(Order.items).joinedload(OrderItem.menu_item)  # type: ignore
@@ -395,7 +394,7 @@ def get_orders():
         orders = Order.query.filter_by(student_id=current_user.id).options(
             joinedload(Order.items).joinedload(OrderItem.menu_item)  # type: ignore
         ).order_by(Order.created_at.desc()).all()
-    
+
     return jsonify([{
         'id': order.id,
         'total_amount': order.total_amount,
@@ -414,12 +413,12 @@ def get_orders():
 def update_order_status(order_id):
     if current_user.role not in ['admin', 'vendor']:
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     order = Order.query.get_or_404(order_id)
     data = request.json
     order.status = data['status']
     db.session.commit()
-    
+
     notification = Notification(  # type: ignore
         user_id=order.student_id,
         title=f'Order #{order.id} Update',
@@ -428,7 +427,7 @@ def update_order_status(order_id):
     )
     db.session.add(notification)
     db.session.commit()
-    
+
     return jsonify({'message': 'Order status updated'})
 
 # ==================== PARENT DASHBOARD API ====================
@@ -438,7 +437,7 @@ def update_order_status(order_id):
 def get_children():
     if current_user.role != 'parent':
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     children = User.query.filter_by(parent_id=current_user.id).all()
     return jsonify([{
         'id': child.id,
@@ -452,19 +451,19 @@ def get_children():
 def get_child_nutrition(child_id):
     if current_user.role != 'parent':
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     child = User.query.get_or_404(child_id)
     if child.parent_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     week_ago = datetime.utcnow() - timedelta(days=7)
     orders = Order.query.filter(Order.student_id == child_id, Order.created_at >= week_ago).all()
-    
+
     total_calories = 0
     total_protein = 0
     total_spending = 0
     categories = {}
-    
+
     for order in orders:
         total_spending += order.total_amount
         for item in order.items:
@@ -472,7 +471,7 @@ def get_child_nutrition(child_id):
             total_protein += (item.menu_item.protein or 0) * item.quantity
             cat = item.menu_item.category
             categories[cat] = categories.get(cat, 0) + item.quantity
-    
+
     return jsonify({
         'weekly_calories': total_calories,
         'weekly_protein': total_protein,
@@ -486,36 +485,36 @@ def get_child_nutrition(child_id):
 def manage_parental_controls(child_id):
     if current_user.role != 'parent':
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     child = User.query.get_or_404(child_id)
     if child.parent_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     if request.method == 'POST':
         data = request.json
         control = ParentalControl.query.filter_by(parent_id=current_user.id, child_id=child_id).first()
-        
+
         if not control:
             control = ParentalControl(parent_id=current_user.id, child_id=child_id)  # type: ignore
             db.session.add(control)
-        
+
         control.approved_items = json.dumps(data.get('approved_items', []))
-        
+
         blocked_items = data.get('blocked_items', [])
         if data.get('block_junk_food') and 'junk_food' not in blocked_items:
             blocked_items.append('junk_food')
         if data.get('block_sugary_drinks') and 'sugary_drinks' not in blocked_items:
             blocked_items.append('sugary_drinks')
         control.blocked_items = json.dumps(blocked_items)
-        
+
         control.daily_limit = data.get('daily_limit')
         control.spending_limit = data.get('spending_limit')
         control.require_approval = data.get('require_approval', False)
         control.allowed_categories = json.dumps(data.get('allowed_categories', []))
-        
+
         db.session.commit()
         return jsonify({'message': 'Parental controls updated'})
-    
+
     control = ParentalControl.query.filter_by(parent_id=current_user.id, child_id=child_id).first()
     if control:
         blocked_items = json.loads(control.blocked_items or '[]')
@@ -538,32 +537,32 @@ def manage_parental_controls(child_id):
 def get_analytics():
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     today = datetime.utcnow().date()
     week_ago = today - timedelta(days=7)
     month_ago = today - timedelta(days=30)
-    
+
     daily_orders = Order.query.filter(db.func.date(Order.created_at) == today).all()
     weekly_orders = Order.query.filter(Order.created_at >= week_ago).all()
     monthly_orders = Order.query.filter(Order.created_at >= month_ago).all()
-    
+
     daily_revenue = sum(o.total_amount for o in daily_orders)
     weekly_revenue = sum(o.total_amount for o in weekly_orders)
     monthly_revenue = sum(o.total_amount for o in monthly_orders)
-    
+
     item_sales = db.session.query(
         MenuItem.name,
         db.func.sum(OrderItem.quantity).label('total_sold')
     ).join(OrderItem).group_by(MenuItem.id).order_by(db.desc('total_sold')).limit(10).all()
-    
+
     low_stock = MenuItem.query.filter(MenuItem.stock < 10).all()
-    
+
     daily_sales = db.session.query(
         db.func.date(Order.created_at).label('date'),
         db.func.sum(Order.total_amount).label('revenue'),
         db.func.count(Order.id).label('orders')
     ).filter(Order.created_at >= week_ago).group_by(db.func.date(Order.created_at)).all()
-    
+
     return jsonify({
         'daily_revenue': daily_revenue,
         'weekly_revenue': weekly_revenue,
@@ -581,7 +580,7 @@ def get_analytics():
 def manage_inventory():
     if current_user.role not in ['admin', 'vendor']:
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     if request.method == 'PUT':
         data = request.json
         item = MenuItem.query.get_or_404(data['item_id'])
@@ -589,7 +588,7 @@ def manage_inventory():
         item.is_available = data.get('is_available', item.is_available)
         db.session.commit()
         return jsonify({'message': 'Inventory updated'})
-    
+
     items = MenuItem.query.all()
     return jsonify([{
         'id': item.id,
@@ -605,26 +604,26 @@ def manage_inventory():
 @login_required
 def manage_health_profile():
     profile = HealthProfile.query.filter_by(user_id=current_user.id).first()
-    
+
     if request.method == 'POST':
         data = request.json
         if not profile:
             profile = HealthProfile(user_id=current_user.id)  # type: ignore
             db.session.add(profile)
-        
+
         profile.height = data.get('height')
         profile.weight = data.get('weight')
         profile.fitness_goal = data.get('fitness_goal')
         profile.allergies = json.dumps(data.get('allergies', []))
         profile.dietary_preferences = json.dumps(data.get('dietary_preferences', []))
-        
+
         if profile.height and profile.weight:
             height_m = profile.height / 100
             profile.bmi = round(profile.weight / (height_m * height_m), 2)
-        
+
         db.session.commit()
         return jsonify({'message': 'Profile updated', 'bmi': profile.bmi})
-    
+
     if profile:
         return jsonify({
             'height': profile.height,
@@ -641,25 +640,25 @@ def manage_health_profile():
 @login_required
 def get_diet_plan():
     profile = HealthProfile.query.filter_by(user_id=current_user.id).first()
-    
+
     if not profile or not profile.bmi:
         return jsonify({'error': 'Please update your health profile first'}), 400
-    
+
     allergies = json.loads(profile.allergies or '[]')
     goal = profile.fitness_goal or 'maintain'
-    
+
     items = MenuItem.query.filter(MenuItem.is_available == True, MenuItem.health_score >= 7).all()
-    
+
     if goal == 'lose_weight':
         items = [i for i in items if i.calories < 200]
     elif goal == 'gain_muscle':
         items = [i for i in items if i.protein and i.protein > 10]
-    
+
     breakfast = [i for i in items if i.category == 'Breakfast'][:2]
     lunch = [i for i in items if i.category == 'Meals'][:2]
     snacks = [i for i in items if i.category in ['Snacks', 'Fruits']][:3]
     dinner = [i for i in items if i.category == 'Meals'][2:4]
-    
+
     return jsonify({
         'bmi': profile.bmi,
         'goal': goal,
@@ -679,12 +678,12 @@ def get_diet_plan():
 @login_required
 def get_gamification_stats():
     stats = Gamification.query.filter_by(user_id=current_user.id).first()
-    
+
     if not stats:
         stats = Gamification(user_id=current_user.id)  # type: ignore
         db.session.add(stats)
         db.session.commit()
-    
+
     return jsonify({
         'health_points': stats.health_points,
         'rank': stats.rank,
@@ -700,7 +699,7 @@ def get_leaderboard():
         Gamification.health_points,
         Gamification.total_healthy_meals
     ).join(Gamification).order_by(Gamification.health_points.desc()).limit(10).all()
-    
+
     return jsonify([{
         'name': name,
         'health_points': points,
@@ -713,16 +712,16 @@ def get_leaderboard():
 def redeem_points():
     data = request.json
     points_to_redeem = data.get('points', 0)
-    
+
     stats = Gamification.query.filter_by(user_id=current_user.id).first()
-    
+
     if not stats or stats.health_points < points_to_redeem:
         return jsonify({'error': 'Insufficient points'}), 400
-    
+
     discount = points_to_redeem * 0.1
     stats.health_points -= points_to_redeem
     db.session.commit()
-    
+
     return jsonify({
         'message': f'Redeemed {points_to_redeem} points',
         'discount': discount,
@@ -750,13 +749,13 @@ def manage_subscriptions():
     if request.method == 'POST':
         data = request.json
         plan = SubscriptionPlan.query.get_or_404(data['plan_id'])
-        
+
         existing = Subscription.query.filter_by(user_id=current_user.id, is_active=True).first()
         if existing:
             existing.is_active = False
-        
+
         end_date = datetime.utcnow() + timedelta(days=30 if plan.plan_type == 'monthly' else 7)
-        
+
         subscription = Subscription(  # type: ignore
             user_id=current_user.id,
             plan_id=plan.id,
@@ -764,9 +763,9 @@ def manage_subscriptions():
         )
         db.session.add(subscription)
         db.session.commit()
-        
+
         return jsonify({'message': 'Subscription activated', 'end_date': end_date.isoformat()})
-    
+
     subscriptions = Subscription.query.filter_by(user_id=current_user.id).all()
     return jsonify([{
         'id': sub.id,
@@ -782,34 +781,34 @@ def manage_subscriptions():
 @login_required
 def get_invoice(order_id):
     order = Order.query.get_or_404(order_id)
-    
+
     if order.student_id != current_user.id and current_user.role not in ['admin', 'parent']:
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     buffer = BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
-    
+
     p.setFont("Helvetica-Bold", 24)
     p.drawString(50, height - 50, "BiteBox Smart Canteen")
     p.setFont("Helvetica", 12)
     p.drawString(50, height - 70, "Silverline Prestige School, Ghaziabad")
-    
+
     p.setFont("Helvetica-Bold", 16)
     p.drawString(50, height - 120, f"Invoice #{order.id}")
     p.setFont("Helvetica", 12)
     p.drawString(50, height - 140, f"Date: {order.created_at.strftime('%Y-%m-%d %H:%M')}")
     p.drawString(50, height - 160, f"Status: {order.status}")
-    
+
     p.line(50, height - 180, width - 50, height - 180)
-    
+
     y = height - 210
     p.setFont("Helvetica-Bold", 12)
     p.drawString(50, y, "Item")
     p.drawString(300, y, "Qty")
     p.drawString(400, y, "Price")
     p.drawString(480, y, "Total")
-    
+
     y -= 25
     p.setFont("Helvetica", 11)
     for item in order.items:
@@ -818,17 +817,17 @@ def get_invoice(order_id):
         p.drawString(400, y, f"₹{item.price}")
         p.drawString(480, y, f"₹{item.price * item.quantity}")
         y -= 20
-    
+
     p.line(50, y - 10, width - 50, y - 10)
     p.setFont("Helvetica-Bold", 14)
     p.drawString(400, y - 35, f"Total: ₹{order.total_amount}")
-    
+
     p.setFont("Helvetica", 10)
     p.drawString(50, 50, "Thank you for choosing BiteBox Smart Canteen!")
-    
+
     p.showPage()
     p.save()
-    
+
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f'invoice_{order.id}.pdf', mimetype='application/pdf')
 
@@ -836,17 +835,17 @@ def get_invoice(order_id):
 @login_required
 def get_monthly_summary():
     month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    
+
     if current_user.role == 'parent':
         children = User.query.filter_by(parent_id=current_user.id).all()
         child_ids = [c.id for c in children]
         orders = Order.query.filter(Order.student_id.in_(child_ids), Order.created_at >= month_start).all()
     else:
         orders = Order.query.filter(Order.student_id == current_user.id, Order.created_at >= month_start).all()
-    
+
     total_spent = sum(o.total_amount for o in orders)
     total_orders = len(orders)
-    
+
     return jsonify({
         'month': month_start.strftime('%B %Y'),
         'total_spent': total_spent,
@@ -858,43 +857,43 @@ def get_monthly_summary():
 @login_required
 def get_monthly_pdf():
     month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    
+
     if current_user.role == 'parent':
         children = User.query.filter_by(parent_id=current_user.id).all()
         child_ids = [c.id for c in children]
         orders = Order.query.filter(Order.student_id.in_(child_ids), Order.created_at >= month_start).all()
     else:
         orders = Order.query.filter(Order.student_id == current_user.id, Order.created_at >= month_start).all()
-    
+
     buffer = BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
-    
+
     p.setFont("Helvetica-Bold", 24)
     p.drawString(50, height - 50, "BiteBox Smart Canteen")
     p.setFont("Helvetica", 12)
     p.drawString(50, height - 70, "Monthly Summary Report")
-    
+
     p.setFont("Helvetica-Bold", 16)
     p.drawString(50, height - 110, f"Month: {month_start.strftime('%B %Y')}")
     p.setFont("Helvetica", 12)
     p.drawString(50, height - 130, f"Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}")
-    
+
     p.line(50, height - 150, width - 50, height - 150)
-    
+
     total_spent = sum(o.total_amount for o in orders)
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, height - 180, f"Total Orders: {len(orders)}")
     p.drawString(50, height - 200, f"Total Spent: ₹{total_spent}")
     p.drawString(50, height - 220, f"Average per Order: ₹{total_spent / len(orders) if orders else 0:.2f}")
-    
+
     y = height - 260
     p.setFont("Helvetica-Bold", 12)
     p.drawString(50, y, "Order #")
     p.drawString(120, y, "Date")
     p.drawString(250, y, "Items")
     p.drawString(400, y, "Amount")
-    
+
     y -= 25
     p.setFont("Helvetica", 10)
     for order in orders[:20]:
@@ -906,13 +905,13 @@ def get_monthly_pdf():
         if y < 100:
             p.showPage()
             y = height - 50
-    
+
     p.setFont("Helvetica", 10)
     p.drawString(50, 50, "Thank you for choosing BiteBox Smart Canteen!")
-    
+
     p.showPage()
     p.save()
-    
+
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f'monthly_summary_{month_start.strftime("%Y_%m")}.pdf', mimetype='application/pdf')
 
@@ -921,22 +920,22 @@ def get_monthly_pdf():
 def get_parent_activity():
     if current_user.role != 'parent':
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     children = User.query.filter_by(parent_id=current_user.id).all()
     child_ids = [c.id for c in children]
     child_names = {c.id: c.name for c in children}
-    
+
     from sqlalchemy.orm import joinedload
     recent_orders = Order.query.filter(Order.student_id.in_(child_ids)).options(
         joinedload(Order.items).joinedload(OrderItem.menu_item)  # type: ignore
     ).order_by(Order.created_at.desc()).limit(10).all()
-    
+
     activities = []
     for order in recent_orders:
         items_str = ', '.join([item.menu_item.name for item in order.items[:3]])
         if len(order.items) > 3:
             items_str += f' +{len(order.items) - 3} more'
-        
+
         activities.append({
             'type': 'order',
             'child_name': child_names.get(order.student_id, 'Unknown'),
@@ -945,7 +944,7 @@ def get_parent_activity():
             'time': order.created_at.isoformat(),
             'status': order.status
         })
-    
+
     return jsonify(activities)
 
 @app.route('/api/parent/stats')
@@ -953,31 +952,31 @@ def get_parent_activity():
 def get_parent_stats():
     if current_user.role != 'parent':
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     children = User.query.filter_by(parent_id=current_user.id).all()
     child_ids = [c.id for c in children]
-    
+
     from sqlalchemy.orm import joinedload
     month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    
+
     orders = Order.query.filter(
         Order.student_id.in_(child_ids),
         Order.created_at >= month_start
     ).options(joinedload(Order.items).joinedload(OrderItem.menu_item)).all()  # type: ignore
-    
+
     total_items = 0
     healthy_items = 0
     total_spent = 0
-    
+
     for order in orders:
         total_spent += order.total_amount
         for item in order.items:
             total_items += item.quantity
             if item.menu_item and item.menu_item.health_score >= 7:
                 healthy_items += item.quantity
-    
+
     healthy_percent = round((healthy_items / total_items * 100) if total_items > 0 else 0)
-    
+
     return jsonify({
         'children_count': len(children),
         'monthly_spent': total_spent,
@@ -1017,12 +1016,12 @@ def mark_notification_read(notification_id):
 def get_user_stats():
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     students = User.query.filter_by(role='student').count()
     parents = User.query.filter_by(role='parent').count()
     vendors = User.query.filter_by(role='vendor').count()
     admins = User.query.filter_by(role='admin').count()
-    
+
     return jsonify({
         'students': students,
         'parents': parents,
@@ -1038,9 +1037,9 @@ def get_user_stats():
 def generate_admin_report(report_type):
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     today = datetime.utcnow().date()
-    
+
     if report_type == 'daily':
         start_date = today
         title = f"Daily Sales Report - {today.strftime('%B %d, %Y')}"
@@ -1053,10 +1052,10 @@ def generate_admin_report(report_type):
         start_date = today - timedelta(days=30)
         title = f"Monthly Sales Report - {start_date.strftime('%B %Y')}"
         orders = Order.query.filter(Order.created_at >= start_date).all()
-    
+
     total_revenue = sum(o.total_amount for o in orders)
     total_orders = len(orders)
-    
+
     item_sales = {}
     category_sales = {}
     for order in orders:
@@ -1065,41 +1064,41 @@ def generate_admin_report(report_type):
             category = item.menu_item.category if item.menu_item else 'Unknown'
             item_sales[item_name] = item_sales.get(item_name, 0) + item.quantity
             category_sales[category] = category_sales.get(category, 0) + (item.price * item.quantity)
-    
+
     top_items = sorted(item_sales.items(), key=lambda x: x[1], reverse=True)[:10]
-    
+
     buffer = BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
-    
+
     p.setFont("Helvetica-Bold", 24)
     p.drawString(50, height - 50, "BiteBox Smart Canteen")
     p.setFont("Helvetica", 12)
     p.drawString(50, height - 70, "Silverline Prestige School, Ghaziabad")
-    
+
     p.setFont("Helvetica-Bold", 16)
     p.drawString(50, height - 110, title)
     p.setFont("Helvetica", 12)
     p.drawString(50, height - 130, f"Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}")
-    
+
     p.line(50, height - 150, width - 50, height - 150)
-    
+
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, height - 180, "Summary")
     p.setFont("Helvetica", 12)
     p.drawString(50, height - 200, f"Total Orders: {total_orders}")
     p.drawString(50, height - 220, f"Total Revenue: Rs.{total_revenue}")
     p.drawString(50, height - 240, f"Average Order Value: Rs.{total_revenue / total_orders if total_orders > 0 else 0:.2f}")
-    
+
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, height - 280, "Top Selling Items")
-    
+
     y = height - 305
     p.setFont("Helvetica-Bold", 11)
     p.drawString(50, y, "Rank")
     p.drawString(100, y, "Item Name")
     p.drawString(350, y, "Quantity Sold")
-    
+
     y -= 20
     p.setFont("Helvetica", 11)
     for idx, (name, qty) in enumerate(top_items, 1):
@@ -1109,7 +1108,7 @@ def generate_admin_report(report_type):
         y -= 18
         if y < 150:
             break
-    
+
     y -= 30
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, y, "Sales by Category")
@@ -1120,13 +1119,13 @@ def generate_admin_report(report_type):
         y -= 18
         if y < 80:
             break
-    
+
     p.setFont("Helvetica", 10)
     p.drawString(50, 50, "BiteBox Smart Canteen - Automated Report")
-    
+
     p.showPage()
     p.save()
-    
+
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f'{report_type}_report_{today.strftime("%Y_%m_%d")}.pdf', mimetype='application/pdf')
 
@@ -1136,40 +1135,40 @@ def generate_admin_report(report_type):
 @login_required
 def ai_chat():
     from google import genai
-    
+
     data = request.json
     user_message = data.get('message', '')
-    
+
     if not user_message:
         return jsonify({'error': 'Message is required'}), 400
-    
+
     try:
         # Initialize Gemini client
         client = genai.Client(api_key="AIzaSyBONjV4J1h3W-4xQeO7wgkBLxqnp8nCh3g")
-        
+
         # Get user's health profile for context
         profile = HealthProfile.query.filter_by(user_id=current_user.id).first()
         context = f"You are a nutrition and health assistant for BiteBox Smart Canteen. "
-        
+
         if profile:
             context += f"The user has a BMI of {profile.bmi}, fitness goal: {profile.fitness_goal}. "
             if profile.allergies:
                 context += f"Allergies: {profile.allergies}. "
-        
+
         context += "Provide helpful, accurate, and concise answers about nutrition, healthy eating, menu items, and wellness. Keep responses under 150 words."
-        
+
         # Generate response
         full_prompt = f"{context}\n\nUser question: {user_message}"
         response = client.models.generate_content(
             model="gemini-2.0-flash-exp",
             contents=full_prompt
         )
-        
+
         return jsonify({
             'response': response.text,
             'timestamp': datetime.utcnow().isoformat()
         })
-        
+
     except Exception as e:
         print(f"AI Chat Error: {e}")
         return jsonify({'error': 'Failed to get AI response. Please try again.'}), 500
@@ -1190,12 +1189,12 @@ def manage_feedback():
         db.session.add(feedback)
         db.session.commit()
         return jsonify({'message': 'Feedback submitted successfully'})
-    
+
     if current_user.role == 'admin':
         feedbacks = Feedback.query.order_by(Feedback.created_at.desc()).all()
     else:
         feedbacks = Feedback.query.filter_by(user_id=current_user.id).all()
-    
+
     return jsonify([{
         'id': f.id,
         'rating': f.rating,

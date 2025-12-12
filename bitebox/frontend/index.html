@@ -3,104 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BiteBox - Silverline Prestige School</title>
+    <title>BiteBox - Smart Canteen Experience</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#667eea">
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="dark-theme">
-    <header class="header">
-        <div class="header-inner">
-            <a href="/" class="logo">
-                <span class="logo-icon">B</span>
-                <span class="logo-text">BiteBox</span>
-            </a>
-            <nav class="nav">
-                <a href="/menu">Menu</a>
-                <a href="/login" class="btn-login">Login</a>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <img src="/attached_assets/cropped_circle_image_(2)_1765191832848.png" alt="BiteBox Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <i class="fas fa-box-open" style="display: none;"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>BiteBox</h1>
+                    <span>Smart Canteen</span>
+                </div>
+            </div>
+            <nav class="main-nav">
+                <a href="/menu" class="nav-link"><i class="fas fa-utensils"></i> Menu</a>
+                <a href="#features" class="nav-link"><i class="fas fa-star"></i> Features</a>
+                <a href="#about" class="nav-link"><i class="fas fa-info-circle"></i> About</a>
             </nav>
+            <div class="header-actions">
+                <button class="btn-icon" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="btn-icon" onclick="toggleLanguage()" title="Language">
+                    <i class="fas fa-globe"></i>
+                </button>
+                <a href="/login" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Login</a>
+            </div>
         </div>
     </header>
 
     <main>
-        <section class="hero">
-            <div class="hero-inner">
-                <div class="school-tag">Silverline Prestige School</div>
-                <h1>Smart Canteen System</h1>
-                <p class="hero-desc">Order meals, track nutrition, manage spending. Built for students, parents, and staff.</p>
-                <div class="hero-actions">
-                    <a href="/login" class="btn btn-primary">Login</a>
-                    <a href="/register" class="btn btn-secondary">Register</a>
+        <section class="hero-section">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-icon">🍎</span>
+                    <span>100% Healthy Nutrition</span>
+                </div>
+                <h1 class="hero-title">Smart Canteen Experience</h1>
+                <p class="hero-subtitle">AI-powered nutritious meals, lightning-fast service, and comprehensive health tracking for students</p>
+                <div class="hero-features">
+                    <div class="feature-pill"><i class="fas fa-leaf"></i> Organic Healthy Food</div>
+                    <div class="feature-pill"><i class="fas fa-bolt"></i> Ultra Fast Service</div>
+                    <div class="feature-pill"><i class="fas fa-chart-line"></i> Live Health Analytics</div>
+                    <div class="feature-pill"><i class="fas fa-robot"></i> AI Recommendations</div>
+                </div>
+                <div class="hero-buttons">
+                    <a href="/register" class="btn-primary btn-large"><i class="fas fa-user-plus"></i> Get Started</a>
+                    <a href="/menu" class="btn-secondary btn-large"><i class="fas fa-utensils"></i> View Menu</a>
                 </div>
             </div>
         </section>
 
-        <section class="section">
-            <h2 class="section-title">System Access</h2>
-            <div class="cards-grid">
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-graduation-cap"></i></div>
+        <section id="features" class="features-section">
+            <h2 class="section-title">Advanced Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-utensils"></i></div>
+                    <h3>Smart Menu</h3>
+                    <p>Browse nutritious meals with real-time health scores, calorie counts, and AI-powered recommendations</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-heartbeat"></i></div>
+                    <h3>Health Dashboard</h3>
+                    <p>Track BMI, calories, nutrients in real-time. Earn wellness points for every healthy choice</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-users"></i></div>
+                    <h3>Parent Control</h3>
+                    <p>Monitor your child's nutrition, set spending limits, block unhealthy items, get weekly reports</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+                    <h3>Analytics Suite</h3>
+                    <p>Advanced reporting, inventory management, sales analytics, and trend prediction</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-rocket"></i></div>
+                    <h3>Instant Ordering</h3>
+                    <p>Pre-order meals, reserve items, skip queues with our intelligent ordering system</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-brain"></i></div>
+                    <h3>AI Assistant</h3>
+                    <p>Personalized meal recommendations based on your health goals, allergies, and preferences</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="roles-section">
+            <h2 class="section-title">Role-Based Interfaces</h2>
+            <div class="roles-grid">
+                <div class="role-card student">
+                    <div class="role-icon"><i class="fas fa-graduation-cap"></i></div>
                     <h3>Student</h3>
-                    <p>Order meals, view nutrition info, track points</p>
-                    <a href="/register?role=student" class="card-link">Register</a>
+                    <ul>
+                        <li>Browse & order meals instantly</li>
+                        <li>Track nutrition & wellness</li>
+                        <li>Earn & redeem points</li>
+                        <li>Get personalized meal plans</li>
+                    </ul>
+                    <a href="/register?role=student" class="btn-role">Register as Student</a>
                 </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-users"></i></div>
+                <div class="role-card parent">
+                    <div class="role-icon"><i class="fas fa-user-friends"></i></div>
                     <h3>Parent</h3>
-                    <p>Monitor meals, set limits, view reports</p>
-                    <a href="/login" class="card-link">Parent Login</a>
+                    <ul>
+                        <li>Monitor child's meals</li>
+                        <li>Manage spending limits</li>
+                        <li>Control menu access</li>
+                        <li>Get nutrition reports</li>
+                    </ul>
+                    <a href="/register?role=parent" class="btn-role">Register as Parent</a>
                 </div>
-                <div class="card">
-                    <div class="card-icon"><i class="fas fa-cog"></i></div>
+                <div class="role-card admin">
+                    <div class="role-icon"><i class="fas fa-user-shield"></i></div>
                     <h3>Admin</h3>
-                    <p>Manage menu, orders, users, analytics</p>
-                    <a href="/login" class="card-link">Admin Login</a>
+                    <ul>
+                        <li>Full analytics dashboard</li>
+                        <li>Inventory management</li>
+                        <li>Generate reports</li>
+                        <li>User management</li>
+                    </ul>
+                    <a href="/register?role=admin" class="btn-role">Admin Portal</a>
+                </div>
+                <div class="role-card vendor">
+                    <div class="role-icon"><i class="fas fa-store"></i></div>
+                    <h3>Vendor</h3>
+                    <ul>
+                        <li>Manage orders</li>
+                        <li>Update inventory</li>
+                        <li>View sales data</li>
+                        <li>Real-time alerts</li>
+                    </ul>
+                    <a href="/register?role=vendor" class="btn-role">Vendor Portal</a>
                 </div>
             </div>
         </section>
 
-        <section class="section">
-            <h2 class="section-title">Features</h2>
-            <div class="features-list">
-                <div class="feature-item">
-                    <span class="feature-icon"><i class="fas fa-utensils"></i></span>
-                    <div class="feature-content">
-                        <strong>Menu Management</strong>
-                        <span>Add, edit, remove items with nutrition data</span>
-                    </div>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon"><i class="fas fa-shopping-cart"></i></span>
-                    <div class="feature-content">
-                        <strong>Order System</strong>
-                        <span>Students order, kitchen prepares, track status</span>
-                    </div>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon"><i class="fas fa-chart-bar"></i></span>
-                    <div class="feature-content">
-                        <strong>Analytics</strong>
-                        <span>Sales, inventory, nutrition reports</span>
-                    </div>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon"><i class="fas fa-shield-alt"></i></span>
-                    <div class="feature-content">
-                        <strong>Parental Controls</strong>
-                        <span>Spending limits, blocked items, notifications</span>
-                    </div>
+        <section id="about" class="about-section">
+            <div class="about-content">
+                <h2>About BiteBox</h2>
+                <p>BiteBox is a next-generation smart canteen management system for schools. We leverage AI, data analytics, and modern UX to transform school meals into a health-focused, convenient experience. Every feature is designed with both students and parents in mind.</p>
+                <div class="school-info">
+                    <h3><i class="fas fa-school"></i> Silverline Prestige School</h3>
+                    <p>Ghaziabad, India</p>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="footer">
-        <div class="footer-inner">
-            <span>BiteBox @ Silverline Prestige School, Ghaziabad</span>
-            <span class="footer-links">
-                <a href="/login">Login</a>
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3><i class="fas fa-box-open"></i> BiteBox</h3>
+                <p>Smart Canteen Experience</p>
+            </div>
+            <div class="footer-links">
                 <a href="/menu">Menu</a>
-            </span>
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+                <a href="/login">Login</a>
+            </div>
+            <div class="footer-contact">
+                <p><i class="fas fa-envelope"></i> contact@bitebox.edu</p>
+                <p><i class="fas fa-phone"></i> +91 120 4567890</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 BiteBox Smart Canteen. All rights reserved.</p>
         </div>
     </footer>
 

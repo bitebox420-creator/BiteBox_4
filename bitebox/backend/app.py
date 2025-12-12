@@ -11,9 +11,10 @@ from reportlab.lib import colors
 import json
 import random
 import requests
+from sqlalchemy.exc import IntegrityError, ProgrammingError
 
 try:
-    import google.com as genai
+    import google.generativeai as genai
     GENAI_AVAILABLE = True
 except:
     genai = None
@@ -139,7 +140,10 @@ def seed_menu_items():
 
 # Initialize database
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+    except (IntegrityError, ProgrammingError):
+        db.session.rollback()
     if MenuItem.query.count() == 0:
         seed_menu_items()
 

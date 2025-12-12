@@ -13,18 +13,11 @@ import random
 import requests
 
 try:
-    from google import genai
-    from google.genai import types
+    import google.generativeai as genai
     GENAI_AVAILABLE = True
-except ImportError:
-    try:
-        import google.generativeai as genai
-        types = None
-        GENAI_AVAILABLE = True
-    except ImportError:
-        genai = None
-        types = None
-        GENAI_AVAILABLE = False
+except:
+    genai = None
+    GENAI_AVAILABLE = False
 
 from models import db, User, HealthProfile, MenuItem, Order, OrderItem, Invoice, SubscriptionPlan, Subscription, ParentalControl, Gamification, Notification, Feedback, Analytics
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/static')
@@ -196,58 +189,32 @@ def chat_with_ai():
             return jsonify({'reply': 'Please send a message!'}), 400
         
         if not GENAI_AVAILABLE:
-            return jsonify({'reply': get_fallback_response(user_message)}), 200
+            return jsonify({'reply': 'AI module loading... Please try again in a moment!'}), 200
         
-        api_key = os.environ.get('GOOGLE_GENAI_API_KEY') or os.environ.get('GEMINI_API_KEY')
+        api_key = os.environ.get('GOOGLE_GENAI_API_KEY') or os.environ.get('AI_INTEGRATIONS_GOOGLE_GENAI_API_KEY')
         if not api_key:
-            return jsonify({'reply': get_fallback_response(user_message)}), 200
+            return jsonify({'reply': '🤖 Welcome! I\'m BiteBox AI. I can help with nutrition, meal recommendations, and health tips!'}), 200
         
-        try:
-            client = genai.Client(api_key=api_key)
-            system_context = """You are BiteBox, a friendly AI nutrition assistant for a school canteen.
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        system_context = """You are BiteBox, a friendly AI nutrition assistant for a school canteen.
 You help students make healthy food choices, answer nutrition questions, and recommend meals.
 Keep responses concise (2-3 sentences max), friendly, and focused on health and nutrition.
 Our menu includes: fruits, salads, healthy meals, proteins, beverages, and snacks.
 Always promote healthy eating habits and nutritious options."""
-            
-            full_message = f"{system_context}\n\nStudent: {user_message}"
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=full_message
-            )
-            
-            reply = response.text if response.text else "I'd love to help! Please ask me about nutrition or our menu items."
-            return jsonify({'reply': reply})
-        except Exception as api_error:
-            print(f"AI Chat Error: {str(api_error)}")
-            return jsonify({'reply': get_fallback_response(user_message)}), 200
+        
+        full_message = f"{system_context}\n\nStudent: {user_message}"
+        response = model.generate_content(full_message)
+        
+        reply = response.text if response.text else "I'd love to help! Please ask me about nutrition or our menu items."
+        return jsonify({'reply': reply})
     
     except Exception as e:
         print(f"Chat error: {str(e)}")
-        return jsonify({'reply': get_fallback_response(user_message)}), 200
-
-def get_fallback_response(user_message):
-    """Provide helpful nutrition responses when AI is unavailable"""
-    msg = user_message.lower()
-    
-    if any(word in msg for word in ['healthy', 'nutritious', 'good']):
-        return "For healthy meals, try our fresh salads, grilled proteins, and whole grain options. Fruits make excellent snacks too!"
-    elif any(word in msg for word in ['protein', 'muscle', 'gym']):
-        return "High-protein options include grilled chicken, eggs, paneer dishes, and legume-based meals. Great for energy and muscle building!"
-    elif any(word in msg for word in ['calorie', 'diet', 'weight', 'low']):
-        return "Low-calorie options include fresh salads, steamed vegetables, grilled items, and fresh fruits. Stay hydrated with water!"
-    elif any(word in msg for word in ['vegan', 'vegetarian', 'veg']):
-        return "We have great vegetarian options: paneer dishes, dal, vegetable curries, fresh salads, and fruit bowls!"
-    elif any(word in msg for word in ['allergy', 'allergic', 'gluten']):
-        return "Please check with our staff about allergen information. We can customize meals for dietary restrictions."
-    elif any(word in msg for word in ['breakfast', 'morning']):
-        return "Start your day with oatmeal, fresh fruits, eggs, or whole grain toast. A nutritious breakfast boosts concentration!"
-    elif any(word in msg for word in ['snack', 'hungry']):
-        return "Healthy snacks include fresh fruits, nuts, yogurt, or vegetable sticks. Avoid processed snacks for better energy!"
-    elif any(word in msg for word in ['drink', 'beverage', 'thirsty']):
-        return "Water is the best choice! We also have fresh juices, smoothies, and milk. Limit sugary drinks for better health."
-    else:
-        return "I'm your BiteBox nutrition assistant! Ask me about healthy meals, protein options, low-calorie foods, or dietary preferences. I'm here to help you make nutritious choices!"
+        return jsonify({
+            'reply': 'Tip: Try asking "What healthy meals do you recommend?" or "What are low calorie options?"'
+        }), 200
 
 # ==================== AUTH API ====================
 

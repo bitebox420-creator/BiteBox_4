@@ -57,6 +57,7 @@ externalPort = 80
 
 [agent]
 expertMode = true
+integrations = ["python_gemini:1.0.0"]
 
 [userenv]
 

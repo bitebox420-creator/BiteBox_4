@@ -1,6 +1,13 @@
 let menuItems = [];
-let cart = JSON.parse(localStorage.getItem('cart') || '[]');
 let currentFilter = 'all';
+
+function getCart() {
+    return JSON.parse(localStorage.getItem('cart') || '[]');
+}
+
+function setCart(cartData) {
+    localStorage.setItem('cart', JSON.stringify(cartData));
+}
 
 // Default images for each category
 const categoryImages = {
@@ -28,8 +35,8 @@ async function loadMenu() {
     try {
         const response = await fetch('/api/menu');
         const data = await response.json();
-        // Filter only vegetarian items
-        menuItems = (data.items || []).filter(item => item.is_vegetarian === true);
+        const items = Array.isArray(data) ? data : (data.items || []);
+        menuItems = items.filter(item => item.is_vegetarian === true);
         renderMenu();
         renderCategories();
     } catch (error) {

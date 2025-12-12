@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat - BiteBox Smart Canteen</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <img src="/attached_assets/cropped_circle_image_(2)_1765191832848.png" alt="BiteBox Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <i class="fas fa-box-open" style="display: none;"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>BiteBox AI</h1>
+                    <span>Smart Assistant</span>
+                </div>
+            </div>
+            <nav class="main-nav">
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                <a href="/menu" class="nav-link"><i class="fas fa-utensils"></i> Menu</a>
+                <a href="/login" class="nav-link"><i class="fas fa-sign-in-alt"></i> Dashboard</a>
+            </nav>
+            <div class="header-actions">
+                <button class="btn-icon" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="chat-main">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="chat-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <h2>BiteBox Assistant</h2>
+                        <p class="status-online"><span class="dot"></span> Always Available</p>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <button class="chat-icon-btn" title="Clear Chat">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message-group welcome-message">
+                    <div class="message-avatar assistant">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble assistant">
+                            <h3>Welcome to BiteBox AI! 🤖</h3>
+                            <p>I'm your personal nutrition and food ordering assistant. I can help you:</p>
+                            <ul>
+                                <li>Find healthy menu items based on your dietary preferences</li>
+                                <li>Get nutritional information and meal recommendations</li>
+                                <li>Answer questions about our services</li>
+                                <li>Help you place orders</li>
+                                <li>Provide health and wellness tips</li>
+                            </ul>
+                            <p style="margin-top: 1rem;">What can I help you with today?</p>
+                        </div>
+                        <span class="message-time">Just now</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-suggestions" id="chatSuggestions">
+                <button class="suggestion-btn" onclick="sendMessage('What healthy meals do you recommend?')">
+                    <i class="fas fa-leaf"></i> Healthy Meals
+                </button>
+                <button class="suggestion-btn" onclick="sendMessage('Show me high protein options')">
+                    <i class="fas fa-dumbbell"></i> High Protein
+                </button>
+                <button class="suggestion-btn" onclick="sendMessage('What are low calorie options?')">
+                    <i class="fas fa-heart"></i> Low Calorie
+                </button>
+                <button class="suggestion-btn" onclick="sendMessage('Tell me about vegan options')">
+                    <i class="fas fa-leaf"></i> Vegan Food
+                </button>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        class="chat-input"
+                        placeholder="Ask me about nutrition, meals, health tips... or just chat!"
+                        rows="1"
+                    ></textarea>
+                    <button class="chat-send-btn" onclick="sendMessage()" title="Send Message">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <p class="chat-hint">💡 Tip: Ask me anything about nutrition, health, and our menu!</p>
+            </div>
+        </div>
+
+        <div class="chat-sidebar">
+            <div class="sidebar-card">
+                <h3><i class="fas fa-clock"></i> Quick Tips</h3>
+                <ul>
+                    <li>🥗 Start your day with a nutritious breakfast</li>
+                    <li>💧 Drink plenty of water throughout the day</li>
+                    <li>🏃 Stay active and exercise regularly</li>
+                    <li>🥦 Include vegetables in every meal</li>
+                    <li>😊 Maintain a balanced diet</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-card">
+                <h3><i class="fas fa-sparkles"></i> Popular Queries</h3>
+                <div class="query-tags">
+                    <button class="query-tag" onclick="sendMessage('Calorie counter')">Calories</button>
+                    <button class="query-tag" onclick="sendMessage('Vegan options')">Vegan</button>
+                    <button class="query-tag" onclick="sendMessage('Protein rich')">Protein</button>
+                    <button class="query-tag" onclick="sendMessage('Allergies')">Allergies</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3><i class="fas fa-box-open"></i> BiteBox</h3>
+                <p>Smart Canteen Experience</p>
+            </div>
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="/menu">Menu</a>
+                <a href="/login">Login</a>
+            </div>
+            <div class="footer-contact">
+                <p><i class="fas fa-envelope"></i> contact@bitebox.edu</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 BiteBox Smart Canteen. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/chat.js"></script>
+</body>
+</html>

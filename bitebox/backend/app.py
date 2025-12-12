@@ -12,6 +12,11 @@ import json
 import random
 import requests
 
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
+
 from models import db, User, HealthProfile, MenuItem, Order, OrderItem, Invoice, SubscriptionPlan, Subscription, ParentalControl, Gamification, Notification, Feedback, Analytics
 app = Flask(__name__, template_folder='../frontend', static_folder='../frontend/static')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'bitebox-secret-key-2024')
@@ -164,6 +169,52 @@ def dashboard():
 @app.route('/menu')
 def menu_page():
     return render_template('menu.html')
+
+@app.route('/chat')
+def chat_page():
+    return render_template('chat.html')
+
+# ==================== AI CHAT API ====================
+
+@app.route('/api/chat', methods=['POST'])
+def chat_with_ai():
+    """AI-powered chat endpoint for nutrition and food recommendations"""
+    try:
+        if not genai:
+            return jsonify({'reply': 'AI module not available. Please contact support.'}), 503
+            
+        data = request.json
+        user_message = data.get('message', '').strip()
+        
+        if not user_message:
+            return jsonify({'reply': 'Please send a message!'}), 400
+        
+        api_key = os.environ.get('GOOGLE_GENAI_API_KEY') or os.environ.get('AI_INTEGRATIONS_GOOGLE_GENAI_API_KEY')
+        if not api_key:
+            return jsonify({'reply': '🤖 Welcome! I\'m BiteBox AI. I can help with nutrition info, meal recommendations, and health tips. Please configure your Google AI API key to enable AI features.'}), 200
+        
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-pro')
+        
+        system_context = """You are BiteBox, a friendly AI nutrition assistant for a school canteen.
+You help students make healthy food choices, answer nutrition questions, and recommend meals.
+Keep responses concise (2-3 sentences max), friendly, and focused on health and nutrition.
+Our menu includes: fruits, salads, healthy meals, proteins, beverages, and snacks.
+Always promote healthy eating habits and nutritious options."""
+        
+        chat = model.start_chat(history=[])
+        full_message = f"{system_context}\n\nStudent: {user_message}"
+        response = chat.send_message(full_message)
+        
+        reply = response.text if response.text else "I'd love to help! Please ask me about nutrition or our menu items."
+        
+        return jsonify({'reply': reply})
+    
+    except Exception as e:
+        print(f"Chat error: {str(e)}")
+        return jsonify({
+            'reply': 'I\'m having a little trouble! Try asking: "What healthy meals do you recommend?" or "What are the calories in bananas?"'
+        }), 200
 
 # ==================== AUTH API ====================
 

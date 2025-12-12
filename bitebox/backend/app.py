@@ -13,7 +13,7 @@ import random
 import requests
 
 try:
-    import google.generativeai as genai
+    import google.com as genai
     GENAI_AVAILABLE = True
 except:
     genai = None

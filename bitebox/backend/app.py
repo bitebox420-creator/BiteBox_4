@@ -149,6 +149,12 @@ with app.app_context():
 
 # ==================== PAGE ROUTES ====================
 
+@app.route('/attached_assets/<path:filename>')
+def serve_attached_assets(filename):
+    import os
+    assets_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'attached_assets')
+    return send_file(os.path.join(assets_path, filename))
+
 @app.route('/')
 def index():
     return render_template('index.html')

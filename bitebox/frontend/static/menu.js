@@ -1,5 +1,6 @@
 let menuItems = [];
 let currentFilter = 'all';
+let cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
 function getCart() {
     return JSON.parse(localStorage.getItem('cart') || '[]');
@@ -7,6 +8,7 @@ function getCart() {
 
 function setCart(cartData) {
     localStorage.setItem('cart', JSON.stringify(cartData));
+    cart = cartData;
 }
 
 // Default images for each category
@@ -222,16 +224,23 @@ function updateQuantity(itemId, change) {
 
 function openCart() {
     const cartSidebar = document.getElementById('cartSidebar');
+    const cartOverlay = document.getElementById('cartOverlay');
     if (cartSidebar) {
         cartSidebar.classList.add('open');
-        cartSidebar.style.display = 'block';
+    }
+    if (cartOverlay) {
+        cartOverlay.classList.add('show');
     }
 }
 
 function closeCart() {
     const cartSidebar = document.getElementById('cartSidebar');
+    const cartOverlay = document.getElementById('cartOverlay');
     if (cartSidebar) {
         cartSidebar.classList.remove('open');
+    }
+    if (cartOverlay) {
+        cartOverlay.classList.remove('show');
     }
 }
 

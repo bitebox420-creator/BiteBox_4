@@ -13,7 +13,7 @@
         <div class="header-content">
             <a href="/" class="logo-section">
                 <div class="logo-icon">
-                    <img src="/attached_assets/cropped_circle_image_(2)_1765191832848.png" alt="BiteBox Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <img src="/attached_assets/cropped_circle_image_(2)_1765203593761.png" alt="BiteBox Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <i class="fas fa-box-open" style="display: none;"></i>
                 </div>
                 <div class="logo-text">
@@ -133,11 +133,12 @@
         </div>
     </div>
 
-    <button id="cartFab" class="fab cart-fab" onclick="openCart()" style="position: fixed; bottom: 20px; right: 20px; z-index: 999;">
+    <button id="cartFab" class="fab cart-fab" onclick="openCart()">
         <i class="fas fa-shopping-cart"></i>
         <span class="cart-count" id="cartCount">0</span>
     </button>
 
+    <div id="cartOverlay" class="cart-overlay" onclick="closeCart()"></div>
     <div id="cartSidebar" class="cart-sidebar">
         <div class="cart-header">
             <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>

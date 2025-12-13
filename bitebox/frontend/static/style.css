@@ -1360,17 +1360,94 @@ body::before {
     top: 0;
     right: -400px;
     width: 400px;
+    max-width: 100vw;
     height: 100vh;
     background: var(--bg-primary);
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
     transition: right 0.3s ease;
-    z-index: 1000;
+    z-index: 1001;
     display: flex;
     flex-direction: column;
+    border-left: 2px solid var(--neon-cyan);
 }
 
 .cart-sidebar.open {
     right: 0;
+}
+
+.cart-header {
+    padding: 1.5rem;
+    background: var(--gradient);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--neon-cyan);
+}
+
+.cart-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cart-header .close-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: none;
+}
+
+.cart-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.empty-cart {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 3rem 1rem;
+    font-size: 1rem;
+}
+
+.cart-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cart-item-actions button {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.cart-item-actions button:hover {
+    background: var(--gradient);
+    color: white;
+    border-color: transparent;
+}
+
+.cart-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: none;
+}
+
+.cart-overlay.show {
+    display: block;
 }
 
 .modal {

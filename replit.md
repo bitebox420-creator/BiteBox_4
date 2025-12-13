@@ -3,7 +3,19 @@
 ## Project Overview
 A world-class school canteen management system with AI-powered nutrition guidance. The website features student ordering, health tracking, admin analytics, parent controls, and gamification. AI chat provides personalized meal recommendations and nutrition advice.
 
-## Recent Updates (December 12, 2025)
+## Recent Updates (December 13, 2025)
+- Fixed requirements.txt typo (fla -> flask)
+- Fixed database initialization race condition with try-except handling
+- Fixed Google Generative AI import (google.com -> google.generativeai)
+- Added SQLAlchemy error handling for duplicate table creation
+- Fixed cart sidebar CSS with proper header, overlay, and animations
+- Added cart overlay for better UX when cart is open
+- Fixed logo 404 error by adding attached_assets route
+- Fixed logo image path in all HTML files
+- Improved cart item actions styling
+- Configured deployment settings for autoscale
+
+## Previous Updates (December 12, 2025)
 - ✅ Implemented AI Chat Interface with modern neon aesthetic (cyan/orange/yellow)
 - ✅ Created `/chat` route and `chat.html` page with beautiful UI
 - ✅ Added `chat.js` for real-time message handling and API communication
